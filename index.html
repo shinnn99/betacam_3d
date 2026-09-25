@@ -1,0 +1,2510 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng 3D Bàn Đóng Hàng & 2 Camera Giám Sát</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      user-select: none;
+      background-color: #080c14;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .cctv-screen {
+      position: relative;
+      background: #020617;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+  </style>
+</head>
+<body class="text-slate-100 w-screen h-screen relative select-none">
+
+  <!-- 3D Canvas chính -->
+  <div id="canvas-container" class="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing z-0"></div>
+
+  <!-- Header thông tin dự án -->
+  <header class="absolute top-3 left-4 z-20 pointer-events-none">
+    <div class="glass-panel px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-auto">
+      <div class="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xs md:text-sm font-bold tracking-tight text-white flex items-center gap-2">
+          BÀN ĐÓNG HÀNG & HỆ THỐNG 2 CAMERA
+          <span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider font-mono-code font-bold">MÔ PHỎNG LIVE</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 font-mono-code">Kích thước chuẩn: 1500 x 1000 x 1800 mm</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- KHUNG XEM HỢP NHẤT 2 CAMERA (PICTURE-IN-PICTURE NVR MONITOR) -->
+  <aside class="absolute top-3 right-4 z-20 flex flex-col gap-2.5 w-80 sm:w-96 md:w-[460px] lg:w-[500px] pointer-events-auto">
+    <!-- Hộp điều khiển góc nhìn nhanh bản vẽ kỹ thuật -->
+    <div class="glass-panel p-1.5 rounded-2xl shadow-xl flex items-center justify-between text-xs">
+      <span class="text-[11px] text-slate-400 font-mono-code pl-2">Góc bản vẽ:</span>
+      <div class="flex gap-1">
+        <button onclick="setCameraView('iso')" id="btn-iso" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-blue-600 text-white shadow transition">ISO</button>
+        <button onclick="setCameraView('front')" id="btn-front" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Đứng</button>
+        <button onclick="setCameraView('side')" id="btn-side" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bên</button>
+        <button onclick="setCameraView('top')" id="btn-top" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bằng</button>
+      </div>
+    </div>
+
+    <!-- MÀN HÌNH CCTV HỢP NHẤT: KHUNG TO CAM 01 + PIP CAM 02 QUÉT QR Ở GÓC PHẢI -->
+    <div class="glass-panel p-2.5 rounded-2xl shadow-2xl border border-sky-500/40 relative">
+      <!-- Header của khung CCTV Hợp nhất -->
+      <div class="flex items-center justify-between pb-1.5 px-1 border-b border-slate-700/60 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+          <span class="text-xs font-bold font-mono-code text-white uppercase tracking-wide">GIÁM SÁT ĐÓNG HÀNG (2-IN-1 VIEW)</span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono-code font-semibold">DUAL LIVE</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="togglePipExpand()" id="btn-toggle-pip" class="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 transition flex items-center gap-1" title="Phóng to / Thu nhỏ khung QR">
+            <span>Góc phải QR</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5m-11 7v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Màn hình CCTV chính (Toàn cảnh Cam 1) + PiP Cam 2 ở góc phải -->
+      <div class="cctv-screen rounded-xl relative w-full h-[230px] sm:h-[260px] md:h-[290px] border border-sky-500/30 shadow-inner overflow-hidden bg-black select-none">
+        
+        <!-- Canvas Cam 1: Toàn cảnh bàn đóng hàng -->
+        <canvas id="pip-canvas-cam1" class="w-full h-full block object-cover"></canvas>
+
+        <!-- OSD Cam 1 (Góc trên bên trái) - Chuẩn CCTV Camera như trong ảnh thực tế -->
+        <div class="absolute top-2 left-2.5 pointer-events-none z-10 flex flex-col gap-0.5 text-left">
+          <div id="cctv-osd-time" class="text-[11px] md:text-xs font-mono-code font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-wide">
+            09-25-2026 Fri 15:06:19
+          </div>
+          <div class="flex items-center gap-1.5 text-[9px] font-mono-code">
+            <span class="text-red-400 font-bold drop-shadow">● REC 1080P</span>
+            <span class="text-slate-300 bg-black/60 px-1 rounded">CH-01: TOÀN CẢNH</span>
+          </div>
+        </div>
+
+        <!-- OSD Cam 1 (Góc dưới bên trái) - Thông số kỹ thuật & mã camera như trong ảnh thực tế -->
+        <div class="absolute bottom-8 left-2.5 pointer-events-none z-10 flex flex-col text-[9px] font-mono-code text-slate-300 drop-shadow">
+          <span class="font-bold text-sky-300/90 tracking-wide">DS-2CD2043G2-LI2UHU(D)</span>
+          <span class="text-[8px] text-slate-400">KHUNG QUAY MẶT BÀN 1500x1000mm - CAO 1000mm</span>
+        </div>
+
+        <!-- KHUNG PiP: CAM 02 QUÉT MÃ QR NẰM GÓC PHẢI KHUNG VIEW (Y HỆT ẢNH MẪU THỰC TẾ) -->
+        <div id="pip-cam2-container" class="absolute top-2 right-2 bottom-8 w-[130px] sm:w-[155px] md:w-[170px] z-20 flex flex-col bg-slate-950/95 border-2 border-emerald-500/90 rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 group">
+          
+          <!-- Thanh tiêu đề của PiP Cam 2 -->
+          <div class="px-2 py-1 bg-slate-900/90 border-b border-emerald-500/30 flex items-center justify-between text-[9px] font-mono-code shrink-0">
+            <div class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="font-bold text-emerald-300 tracking-wider">CAM 02 [QR]</span>
+            </div>
+            <span id="qr-scan-badge" class="px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold whitespace-nowrap">ĐANG CHỜ MÃ</span>
+          </div>
+
+          <!-- Khu vực Canvas Cam 2 quét tem A6 cận cảnh -->
+          <div class="relative flex-1 bg-[#050b14] overflow-hidden flex items-center justify-center">
+            <canvas id="pip-canvas-cam2" class="w-full h-full block object-cover"></canvas>
+            
+            <!-- Khung căn chỉnh quét mã & tia quét động -->
+            <div class="absolute inset-1.5 border border-dashed border-emerald-400/40 rounded pointer-events-none flex flex-col justify-between p-1 z-10">
+              <div class="flex justify-between items-center text-[7px] text-emerald-400/70 font-mono-code">
+                <span>┌ SCANNER</span>
+                <span>SPX ┐</span>
+              </div>
+              
+              <!-- Tia quét Laser khi đang scan -->
+              <div id="pip2-laser-beam" class="hidden w-full h-0.5 bg-gradient-to-r from-red-500 via-rose-300 to-red-500 shadow-[0_0_10px_#ef4444] animate-pulse"></div>
+
+              <div class="flex justify-between items-center text-[7px] text-emerald-400/70 font-mono-code">
+                <span>└ H: 620mm</span>
+                <span>VÙNG ĐỌC ┘</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thanh trạng thái kết quả của PiP Cam 2 -->
+          <div class="px-1.5 py-1 bg-slate-900/95 border-t border-slate-800 text-[8px] font-mono-code flex items-center justify-between text-slate-300 shrink-0">
+            <span class="text-slate-400">MÃ:</span>
+            <span id="qr-result-text" class="text-emerald-300 font-bold truncate max-w-[105px]">VÙNG SCAN CHUẨN</span>
+          </div>
+        </div>
+
+        <!-- Thanh player bar mô phỏng đầu ghi NVR dưới đáy (Giống ảnh mẫu có thanh phát video) -->
+        <div class="absolute bottom-0 left-0 right-0 h-7 bg-black/85 backdrop-blur-sm border-t border-slate-800/80 px-2.5 flex items-center justify-between text-[10px] font-mono-code z-10 text-slate-300">
+          <div class="flex items-center gap-2">
+            <button onclick="toggleVideoPlayback()" class="text-white hover:text-sky-400 transition" title="Tạm dừng/Tiếp tục">
+              <span id="play-pause-icon">▶</span>
+            </button>
+            <span id="cctv-timer" class="text-slate-400 text-[9px]">0:00 / LIVE</span>
+          </div>
+          <div class="hidden sm:block text-[8px] text-slate-500 tracking-wider">
+            CH1 (MAIN 1080P) + CH2 (PiP RIGHT)
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            <span class="text-[8px] text-emerald-400 font-bold">SYNCHRONIZED</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+  <!-- BẢNG ĐIỀU KHIỂN QUY TRÌNH ĐÓNG HÀNG THỰC TẾ 8 BƯỚC (BỌC XỐP NGOÀI HỘP) -->
+  <div class="absolute bottom-4 left-4 right-4 md:right-auto md:w-[680px] z-20 glass-panel p-3.5 rounded-3xl shadow-2xl space-y-2.5">
+    <!-- Tiêu đề và trạng thái quy trình -->
+    <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
+      <div class="flex items-center gap-2">
+        <span class="flex h-3 w-3 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-200">QUY TRÌNH ĐÓNG HÀNG BỌC XỐP NGOÀI HỘP (8 BƯỚC THỰC TẾ)</span>
+      </div>
+      <div class="text-[11px] font-mono-code text-slate-400 flex items-center gap-2">
+        <span>Tiến trình:</span>
+        <span id="step-badge" class="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">Bước 0/8: Chờ bắt đầu</span>
+      </div>
+    </div>
+
+    <!-- 8 Bước trực quan (Stepper 4 cột x 2 hàng) -->
+    <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
+      <div id="step-node-1" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">1. Lấy sản phẩm</div>
+        <div class="text-[9px] text-slate-500 truncate">Bàn để hàng</div>
+      </div>
+      <div id="step-node-2" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">2. Đi qua bàn gói</div>
+        <div class="text-[9px] text-slate-500 truncate">Đặt lên bàn</div>
+      </div>
+      <div id="step-node-3" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">3. Quét mã</div>
+        <div class="text-[9px] text-slate-500 truncate">Cam 2 nhận diện</div>
+      </div>
+      <div id="step-node-4" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">4. Vào hộp</div>
+        <div class="text-[9px] text-slate-500 truncate">Xếp & gập nắp</div>
+      </div>
+      <div id="step-node-5" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">5. Niêm phong</div>
+        <div class="text-[9px] text-slate-500 truncate">Dán băng dính hộp</div>
+      </div>
+      <div id="step-node-6" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">6. Bọc xốp nổ</div>
+        <div class="text-[9px] text-slate-500 truncate">Quấn kín bóng khí</div>
+      </div>
+      <div id="step-node-7" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">7. Dán tem SPX</div>
+        <div class="text-[9px] text-slate-500 truncate">Dán lên lớp xốp</div>
+      </div>
+      <div id="step-node-8" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
+        <div class="font-bold text-[10px] mb-0.5">8. Bàn giao</div>
+        <div class="text-[9px] text-slate-500 truncate">Chờ lấy hàng</div>
+      </div>
+    </div>
+
+    <!-- Thông báo hướng dẫn thời gian thực -->
+    <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
+      <p id="instruction-msg" class="text-slate-300 flex items-center gap-2">
+        <span class="text-amber-400 font-bold text-sm">💡</span>
+        <span>Nhấn <strong>"1. Lấy sản phẩm"</strong> để công nhân nhặt hàng từ bàn để sản phẩm bên cạnh.</span>
+      </p>
+      <span id="barcode-display" class="hidden text-[11px] font-mono-code px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">MÃ SPX: HN-20-10-TX05-N</span>
+    </div>
+
+    <!-- Nút bấm hành động -->
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+      <div class="flex items-center gap-2">
+        <button id="btn-action" onclick="runNextPackingStep()" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="btn-action-label">1. Lấy sản phẩm</span>
+        </button>
+
+        <button onclick="autoRunSimulation()" id="btn-auto" class="px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95">
+          Tự động chạy (Auto)
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="toggleWorkerVisibility()" id="btn-worker-toggle" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition" title="Bật/Tắt mô hình người thao tác">
+          👤 Người thao tác: <strong class="text-emerald-400" id="worker-status">BẬT</strong>
+        </button>
+        <button onclick="toggleFOVCones()" id="btn-fov-toggle" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition" title="Bật/Tắt chóp tia camera">
+          📐 Tia: <strong class="text-blue-400" id="fov-status">BẬT</strong>
+        </button>
+        <button onclick="resetPackingProcess()" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-red-500/20 hover:text-red-300 text-slate-400 border border-slate-700/70 transition" title="Làm mới trạng thái">
+          ↺ Đơn mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- CÁC HẰNG SỐ KÍCH THƯỚC CHUẨN KỸ THUẬT (Đơn vị 1 = 1m = 1000mm) ---
+    const TABLE_WIDTH = 1.5;   // 1500 mm
+    const TABLE_DEPTH = 1.0;   // 1000 mm
+    const TABLE_HEIGHT = 0.8;  // 800 mm
+    const TOP_FRAME_HEIGHT = 1.0; // 1000 mm phía trên bàn
+    const TOTAL_HEIGHT = 1.8;  // 1800 mm tổng cao
+
+    // Tọa độ Vùng quét mã Barcode / QR (Nằm bên phải mặt bàn theo bản vẽ)
+    const ZONE_X = TABLE_WIDTH / 2 - 0.35; // ~0.40m từ tâm sang phải
+    const ZONE_Z = 0.12;                  // Nhô ra phía trước một chút
+    const PACK_X = -0.05;                // Vị trí đóng thùng chính giữa bàn
+    const PACK_Z = 0.05;
+
+    let scene, camera, renderer, controls;
+    let pipCam1, pipCam2;
+    let pipRenderer1, pipRenderer2;
+
+    let tableGroup = new THREE.Group();
+    let fovGroup = new THREE.Group();
+    let dimGroup = new THREE.Group();
+    let simGroup = new THREE.Group();
+    let workerGroup = new THREE.Group();
+
+    // Đối tượng trong quy trình mô phỏng đóng gói
+    let boxGroup, boxFlaps = [], productMesh, tapeStripMesh, qrLabelMesh;
+    let bubbleWrapGroup, bubbleWrapMesh, bubbleTapeMesh;
+    let tapeDispenserMesh;
+    let camLaserLine;
+    let cam1WorldPos = new THREE.Vector3();
+    let cam2WorldPos = new THREE.Vector3();
+
+    // Biến điều khiển người thật thao tác 3D
+    let showWorker = true;
+    let currentLHand = new THREE.Vector3(-1.46, 0.88, 0.35);
+    let targetLHand = new THREE.Vector3(-1.46, 0.88, 0.35);
+    let currentRHand = new THREE.Vector3(-1.24, 0.88, 0.35);
+    let targetRHand = new THREE.Vector3(-1.24, 0.88, 0.35);
+    let leftArmParts = {}, rightArmParts = {};
+    let leftLegGroup, rightLegGroup;
+    const localLeftShoulder = new THREE.Vector3(-0.18, 1.28, -0.03);
+    const localRightShoulder = new THREE.Vector3(0.18, 1.28, -0.03);
+
+    let packingStep = 0; // 0: Chờ, 1: Lấy hàng, 2: Lên bàn, 3: Quét mã, 4: Vào hộp, 5: Dán kín, 6: Bọc xốp, 7: Dán tem, 8: Bàn giao
+    let isAutoRunning = false;
+    let showFovCones = true;
+
+    // Bộ âm thanh tổng hợp Web Audio API (Không dùng link ngoài)
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playBeepSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2200, audioCtx.currentTime); // Tiếng bíp quét barcode đặc trưng
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function playTapeSound() {
+      try {
+        initAudio();
+        // Giả lập tiếng miết băng dính
+        const bufferSize = audioCtx.sampleRate * 0.35;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.15;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(2400, audioCtx.currentTime + 0.35);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+      } catch (e) {}
+    }
+
+    function playBubbleWrapSound() {
+      try {
+        initAudio();
+        // Giả lập tiếng sột soạt bóng khí xốp nổ
+        const bufferSize = Math.floor(audioCtx.sampleRate * 0.45);
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.86 ? 0.35 : 0.05);
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(1400, audioCtx.currentTime);
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+      } catch (e) {}
+    }
+
+    function playSoftThudSound() {
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.16, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    function playSuccessChime() {
+      try {
+        initAudio();
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.12, audioCtx.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + idx * 0.08);
+          osc.stop(audioCtx.currentTime + idx * 0.08 + 0.3);
+        });
+      } catch (e) {}
+    }
+
+    function toggleWorkerVisibility() {
+      showWorker = !showWorker;
+      workerGroup.visible = showWorker;
+      if (leftArmParts.upper) {
+        leftArmParts.upper.visible = showWorker;
+        leftArmParts.forearm.visible = showWorker;
+        leftArmParts.elbowMesh.visible = showWorker;
+        leftArmParts.hand.visible = showWorker;
+        rightArmParts.upper.visible = showWorker;
+        rightArmParts.forearm.visible = showWorker;
+        rightArmParts.elbowMesh.visible = showWorker;
+        rightArmParts.hand.visible = showWorker;
+      }
+      document.getElementById('worker-status').innerText = showWorker ? "BẬT" : "TẮT";
+      document.getElementById('worker-status').className = showWorker ? "text-emerald-400" : "text-slate-500";
+    }
+
+    function init() {
+      const container = document.getElementById('canvas-container');
+
+      // 1. SCENE CHÍNH
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x080c14);
+      scene.fog = new THREE.FogExp2(0x080c14, 0.14);
+
+      // Camera quan sát chính (bao quát cả bàn để sản phẩm bên trái và bàn đóng hàng)
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(2.4, 2.2, 2.6);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.target.set(-0.35, 0.85, 0);
+      controls.maxPolarAngle = Math.PI / 2 + 0.04;
+      controls.minDistance = 0.5;
+      controls.maxDistance = 8;
+
+      // 2. KHỞI TẠO 2 CAMERA CCTV PHỤ (PiP CAMERAS)
+      setupPiPCameras();
+
+      // Đèn & Môi trường
+      setupLighting();
+      setupFloorGrid();
+
+      // Dựng kết cấu bàn, gantry và 2 camera
+      buildPackingTableStructure();
+      buildProductStagingTableStructure();
+      buildOutboundDispatchTableStructure();
+      buildGantryAndCamerasStructure();
+
+      // Dựng các đối tượng mô phỏng đóng gói thật (thùng hàng, sản phẩm, tem QR, laser, xốp nổ)
+      buildInteractivePackingObjects();
+
+      // Dựng người thật thao tác 3D
+      buildHumanWorker();
+
+      // Vẽ kích thước kỹ thuật
+      buildDimensionLines();
+
+      scene.add(tableGroup);
+      scene.add(fovGroup);
+      scene.add(simGroup);
+      scene.add(workerGroup);
+      scene.add(dimGroup);
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // Cập nhật đồng hồ CCTV
+      setInterval(updateCCTVClocks, 1000);
+      updateCCTVClocks();
+
+      animate();
+    }
+
+    function setupLighting() {
+      const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+      scene.add(ambLight);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 1.3);
+      mainLight.position.set(3, 4.5, 3);
+      mainLight.castShadow = true;
+      mainLight.shadow.mapSize.width = 2048;
+      mainLight.shadow.mapSize.height = 2048;
+      mainLight.shadow.bias = -0.0004;
+      const d = 2.5;
+      mainLight.shadow.camera.left = -d;
+      mainLight.shadow.camera.right = d;
+      mainLight.shadow.camera.top = d;
+      mainLight.shadow.camera.bottom = -d;
+      scene.add(mainLight);
+
+      const blueBackLight = new THREE.DirectionalLight(0x38bdf8, 0.5);
+      blueBackLight.position.set(-3, 3, -2);
+      scene.add(blueBackLight);
+
+      const workAreaLight = new THREE.PointLight(0xfff7ed, 0.8, 3.5);
+      workAreaLight.position.set(0, 1.75, 0.1);
+      scene.add(workAreaLight);
+    }
+
+    function setupFloorGrid() {
+      const floorGeo = new THREE.PlaneGeometry(14, 14);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x0a101d, roughness: 0.85, metalness: 0.15 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const grid = new THREE.GridHelper(10, 20, 0x1e3a8a, 0x0f172a);
+      grid.position.y = 0.001;
+      scene.add(grid);
+    }
+
+    function setupPiPCameras() {
+      const pipCanvas1 = document.getElementById('pip-canvas-cam1');
+      const pipCanvas2 = document.getElementById('pip-canvas-cam2');
+
+      const rect1 = pipCanvas1.getBoundingClientRect();
+      const w1 = Math.round(rect1.width) || 480;
+      const h1 = Math.round(rect1.height) || 280;
+      
+      const pixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+
+      pipRenderer1 = new THREE.WebGLRenderer({ canvas: pipCanvas1, antialias: true, powerPreference: "high-performance" });
+      pipRenderer1.setPixelRatio(pixelRatio);
+      pipRenderer1.setSize(w1, h1, false);
+      pipRenderer1.toneMapping = THREE.ACESFilmicToneMapping;
+      pipRenderer1.toneMappingExposure = 1.25;
+
+      const rect2 = pipCanvas2.getBoundingClientRect();
+      const w2 = Math.round(rect2.width) || 160;
+      const h2 = Math.round(rect2.height) || 220;
+      
+      pipRenderer2 = new THREE.WebGLRenderer({ canvas: pipCanvas2, antialias: true, powerPreference: "high-performance" });
+      pipRenderer2.setPixelRatio(pixelRatio);
+      pipRenderer2.setSize(w2, h2, false);
+      pipRenderer2.toneMapping = THREE.ACESFilmicToneMapping;
+      pipRenderer2.toneMappingExposure = 1.25;
+
+      // CAM 1: Toàn cảnh mặt bàn đóng hàng (khung hình bao trọn chuẩn 1500mm mặt bàn chính, không thấy bàn để sản phẩm bên cạnh)
+      pipCam1 = new THREE.PerspectiveCamera(54, w1 / h1, 0.05, 15);
+      pipCam1.position.set(0, TOTAL_HEIGHT - 0.15, 0.0);
+      pipCam1.up.set(0, 0, -1);
+      pipCam1.lookAt(0, TABLE_HEIGHT, 0);
+
+      // CAM 2: Cận cảnh sắc nét vùng quét mã tem SPX (FOV 26 độ cho độ phóng đại tối ưu đọc barcode/QR)
+      pipCam2 = new THREE.PerspectiveCamera(26, w2 / h2, 0.05, 15);
+      pipCam2.position.set(ZONE_X, TABLE_HEIGHT + 0.62 - 0.05, ZONE_Z);
+      pipCam2.up.set(0, 0, -1);
+      pipCam2.lookAt(ZONE_X, TABLE_HEIGHT, ZONE_Z);
+
+      updatePipCam1Fov();
+    }
+
+    // Tự động tính toán FOV dọc của Cam 1 sao cho khung hình ngang đúng bằng chiều rộng mặt bàn chính (1.50m)
+    // Tuyệt đối không lẹm sang bàn để sản phẩm bên cạnh (bàn bên bắt đầu tại X = -0.80m)
+    function updatePipCam1Fov() {
+      if (!pipCam1) return;
+      const aspect = pipCam1.aspect || (16 / 9);
+      const camY = (cam1WorldPos && cam1WorldPos.y) ? cam1WorldPos.y : (TOTAL_HEIGHT - 0.15);
+      const H = Math.max(camY - TABLE_HEIGHT, 0.65);
+      // Nửa chiều rộng mặt bàn chính: 1.5m / 2 = 0.75m. Thêm 0.015m viền nẹp = 0.765m
+      const halfTableW = (TABLE_WIDTH / 2) + 0.015;
+      const tanHalfH = halfTableW / H;
+      const tanHalfV = tanHalfH / aspect;
+      pipCam1.fov = 2 * Math.atan(tanHalfV) * (180 / Math.PI);
+      pipCam1.updateProjectionMatrix();
+    }
+
+    function buildPackingTableStructure() {
+      const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.65 });
+      // Mặt bàn màu đen nhám công nghiệp (thảm cao su ESD / Melamine đen chống trầy)
+      const tableTopMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.8, metalness: 0.1 });
+
+      // 1. Mặt bàn dày 40mm = 0.04m (1500 x 1000 mm)
+      const topThick = 0.04;
+      const topGeo = new THREE.BoxGeometry(TABLE_WIDTH, topThick, TABLE_DEPTH);
+      const topMesh = new THREE.Mesh(topGeo, tableTopMat);
+      topMesh.position.set(0, TABLE_HEIGHT - topThick / 2, 0);
+      topMesh.castShadow = true;
+      topMesh.receiveShadow = true;
+      tableGroup.add(topMesh);
+
+      // Nẹp viền cạnh bàn màu đen đậm
+      const edgeGeo = new THREE.BoxGeometry(TABLE_WIDTH + 0.002, topThick, TABLE_DEPTH + 0.002);
+      const edgeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.3 });
+      const edgeMesh = new THREE.Mesh(edgeGeo, edgeMat);
+      edgeMesh.position.copy(topMesh.position);
+      tableGroup.add(edgeMesh);
+
+      // 2. Chân bàn thép hộp 40x40mm
+      const tube = 0.04;
+      const legH = TABLE_HEIGHT - topThick;
+      const legGeo = new THREE.BoxGeometry(tube, legH, tube);
+      const offX = TABLE_WIDTH / 2 - 0.06;
+      const offZ = TABLE_DEPTH / 2 - 0.06;
+
+      [[-offX, -offZ], [offX, -offZ], [-offX, offZ], [offX, offZ]].forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, steelMat);
+        leg.position.set(pos[0], legH / 2, pos[1]);
+        leg.castShadow = true;
+        leg.receiveShadow = true;
+        tableGroup.add(leg);
+
+        // Bản mã đế chân
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(tube * 1.6, 0.015, tube * 1.6), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+        pad.position.set(pos[0], 0.0075, pos[1]);
+        tableGroup.add(pad);
+      });
+
+      // Giằng chân bàn chống rung
+      const crossbarZGeo = new THREE.BoxGeometry(tube * 0.8, tube * 0.8, TABLE_DEPTH - 0.12);
+      [-offX, offX].forEach(x => {
+        const bar = new THREE.Mesh(crossbarZGeo, steelMat);
+        bar.position.set(x, 0.2, 0);
+        bar.castShadow = true;
+        tableGroup.add(bar);
+      });
+    }
+
+    // DỰNG BÀN ĐỂ SẢN PHẨM BÊN CẠNH (STAGING & PICKING TABLE)
+    function buildProductStagingTableStructure() {
+      const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.65 });
+      const tableTopMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.8, metalness: 0.1 });
+      const trimMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.3, metalness: 0.8 });
+
+      const tableW = 0.90; // 900 mm
+      const tableD = 0.90; // 900 mm
+      const tableH = TABLE_HEIGHT; // 800 mm (cùng chiều cao chuẩn)
+      const topThick = 0.04;
+      const centerX = -1.25; // Đặt ngay sát bên trái bàn đóng hàng (bàn đóng hàng từ -0.75 đến +0.75)
+      const centerZ = 0.0;
+
+      // 1. Mặt bàn để sản phẩm
+      const topGeo = new THREE.BoxGeometry(tableW, topThick, tableD);
+      const topMesh = new THREE.Mesh(topGeo, tableTopMat);
+      topMesh.position.set(centerX, tableH - topThick / 2, centerZ);
+      topMesh.castShadow = true;
+      topMesh.receiveShadow = true;
+      tableGroup.add(topMesh);
+
+      // Nẹp viền kim loại mép bàn
+      const trimGeo = new THREE.BoxGeometry(tableW + 0.004, topThick + 0.002, tableD + 0.004);
+      const trimMesh = new THREE.Mesh(trimGeo, trimMat);
+      trimMesh.position.copy(topMesh.position);
+      tableGroup.add(trimMesh);
+
+      // 2. Chân bàn thép hộp 40x40mm
+      const tube = 0.04;
+      const legH = tableH - topThick;
+      const legGeo = new THREE.BoxGeometry(tube, legH, tube);
+      const offX = tableW / 2 - 0.05;
+      const offZ = tableD / 2 - 0.05;
+
+      [[-offX, -offZ], [offX, -offZ], [-offX, offZ], [offX, offZ]].forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, steelMat);
+        leg.position.set(centerX + pos[0], legH / 2, centerZ + pos[1]);
+        leg.castShadow = true;
+        tableGroup.add(leg);
+
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(tube * 1.5, 0.015, tube * 1.5), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+        pad.position.set(centerX + pos[0], 0.0075, centerZ + pos[1]);
+        tableGroup.add(pad);
+      });
+
+      // Giằng chân bàn chống rung
+      const barZGeo = new THREE.BoxGeometry(tube * 0.8, tube * 0.8, tableD - 0.10);
+      [-offX, offX].forEach(x => {
+        const bar = new THREE.Mesh(barZGeo, steelMat);
+        bar.position.set(centerX + x, 0.2, centerZ);
+        bar.castShadow = true;
+        tableGroup.add(bar);
+      });
+
+      // Tầng kệ phụ dưới gầm bàn
+      const shelfGeo = new THREE.BoxGeometry(tableW - 0.08, 0.015, tableD - 0.08);
+      const shelf = new THREE.Mesh(shelfGeo, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 }));
+      shelf.position.set(centerX, 0.22, centerZ);
+      tableGroup.add(shelf);
+
+      // Thùng hàng dự phòng dưới gầm bàn
+      const spareBox = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.20, 0.26), new THREE.MeshStandardMaterial({ color: 0xb58254, roughness: 0.85 }));
+      spareBox.position.set(centerX, 0.22 + 0.10, centerZ);
+      tableGroup.add(spareBox);
+
+      // 3. THẢM ĐÁNH DẤU VÙNG ĐẶT SẢN PHẨM CHỜ NHẶT Ở PHÍA TRƯỚC BÊN TRÁI
+      const matGeo = new THREE.PlaneGeometry(0.28, 0.24);
+      const matEdges = new THREE.EdgesGeometry(matGeo);
+      const pickMatLine = new THREE.LineSegments(matEdges, new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 0.02, gapSize: 0.012, linewidth: 2 }));
+      pickMatLine.computeLineDistances();
+      pickMatLine.rotation.x = -Math.PI / 2;
+      pickMatLine.position.set(-1.35, tableH + 0.001, 0.10);
+      tableGroup.add(pickMatLine);
+
+      const matFill = new THREE.Mesh(matGeo, new THREE.MeshBasicMaterial({ color: 0x0284c7, transparent: true, opacity: 0.15, side: THREE.DoubleSide }));
+      matFill.rotation.x = -Math.PI / 2;
+      matFill.position.copy(pickMatLine.position);
+      tableGroup.add(matFill);
+
+      // 4. PHIẾU XUẤT KHO / ĐƠN HÀNG (CLIPBOARD) Ở PHÍA TRƯỚC BÊN PHẢI (CÁCH BIỆT RÕ RÀNG 37CM)
+      const boardGeo = new THREE.BoxGeometry(0.20, 0.008, 0.26);
+      const boardMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
+      const clipboard = new THREE.Mesh(boardGeo, boardMat);
+      clipboard.position.set(-0.98, tableH + 0.004, 0.10);
+      clipboard.rotation.y = -Math.PI * 0.04;
+      tableGroup.add(clipboard);
+
+      const paperGeo = new THREE.PlaneGeometry(0.17, 0.22);
+      const paperMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, side: THREE.DoubleSide });
+      const paper = new THREE.Mesh(paperGeo, paperMat);
+      paper.rotation.x = -Math.PI / 2;
+      paper.position.set(0, 0.005, 0);
+      clipboard.add(paper);
+
+      const clip = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.012, 0.022), new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 }));
+      clip.position.set(0, 0.008, -0.10);
+      clipboard.add(clip);
+
+      // 5. ĐẾ VÀ MÁY QUÉT MÃ CẦM TAY DỰ PHÒNG Ở GÓC PHÍA SAU PHẢI (GỌN GÀNG, KHÔNG GÂY VƯỚNG)
+      const dockGeo = new THREE.BoxGeometry(0.08, 0.035, 0.12);
+      const dockMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+      const dockMesh = new THREE.Mesh(dockGeo, dockMat);
+      dockMesh.position.set(-0.98, tableH + 0.0175, -0.25);
+      tableGroup.add(dockMesh);
+
+      const scanHead = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.04, 0.07), new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4 }));
+      scanHead.position.set(-0.98, tableH + 0.055, -0.23);
+      scanHead.rotation.x = 0.35;
+      tableGroup.add(scanHead);
+
+      // 5. BIỂN TÊN VÙNG ĐỂ SẢN PHẨM TRỰC QUAN (RỘNG RÃI, SẮC NÉT)
+      const signCanvas = document.createElement('canvas');
+      signCanvas.width = 640; signCanvas.height = 128;
+      const sCtx = signCanvas.getContext('2d');
+      sCtx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.fill();
+      sCtx.strokeStyle = '#38bdf8';
+      sCtx.lineWidth = 4;
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.stroke();
+      sCtx.fillStyle = '#38bdf8';
+      sCtx.font = 'bold 28px sans-serif';
+      sCtx.textAlign = 'center';
+      sCtx.fillText('BÀN ĐỂ SẢN PHẨM', 320, 56);
+      sCtx.fillStyle = '#94a3b8';
+      sCtx.font = 'bold 18px monospace';
+      sCtx.fillText('STAGING & PICKING ZONE', 320, 98);
+
+      const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(signCanvas), transparent: true }));
+      signSprite.scale.set(0.60, 0.12, 1);
+      signSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
+      tableGroup.add(signSprite);
+    }
+
+    // DỰNG BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI BÊN PHẢI (OUTBOUND & DISPATCH STAGING TABLE)
+    function buildOutboundDispatchTableStructure() {
+      const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.65 });
+      const tableTopMat = new THREE.MeshStandardMaterial({ color: 0x181a20, roughness: 0.8, metalness: 0.1 });
+      const trimMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.3, metalness: 0.8 });
+
+      const tableW = 0.90; // 900 mm
+      const tableD = 0.90; // 900 mm
+      const tableH = TABLE_HEIGHT; // 800 mm
+      const topThick = 0.04;
+      const centerX = 1.25; // Đặt ngay sát bên phải bàn đóng hàng chính (từ 0.80m đến 1.70m)
+      const centerZ = 0.0;
+
+      // 1. Mặt bàn đựng hàng sau đóng gói
+      const topGeo = new THREE.BoxGeometry(tableW, topThick, tableD);
+      const topMesh = new THREE.Mesh(topGeo, tableTopMat);
+      topMesh.position.set(centerX, tableH - topThick / 2, centerZ);
+      topMesh.castShadow = true;
+      topMesh.receiveShadow = true;
+      tableGroup.add(topMesh);
+
+      // Nẹp viền kim loại mép bàn
+      const trimGeo = new THREE.BoxGeometry(tableW + 0.004, topThick + 0.002, tableD + 0.004);
+      const trimMesh = new THREE.Mesh(trimGeo, trimMat);
+      trimMesh.position.copy(topMesh.position);
+      tableGroup.add(trimMesh);
+
+      // 2. Chân bàn thép hộp 40x40mm
+      const tube = 0.04;
+      const legH = tableH - topThick;
+      const legGeo = new THREE.BoxGeometry(tube, legH, tube);
+      const offX = tableW / 2 - 0.05;
+      const offZ = tableD / 2 - 0.05;
+
+      [[-offX, -offZ], [offX, -offZ], [-offX, offZ], [offX, offZ]].forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, steelMat);
+        leg.position.set(centerX + pos[0], legH / 2, centerZ + pos[1]);
+        leg.castShadow = true;
+        tableGroup.add(leg);
+
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(tube * 1.5, 0.015, tube * 1.5), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+        pad.position.set(centerX + pos[0], 0.0075, centerZ + pos[1]);
+        tableGroup.add(pad);
+      });
+
+      // Giằng chân bàn chống rung
+      const barZGeo = new THREE.BoxGeometry(tube * 0.8, tube * 0.8, tableD - 0.10);
+      [-offX, offX].forEach(x => {
+        const bar = new THREE.Mesh(barZGeo, steelMat);
+        bar.position.set(centerX + x, 0.2, centerZ);
+        bar.castShadow = true;
+        tableGroup.add(bar);
+      });
+
+      // Tầng kệ phụ dưới gầm bàn
+      const shelfGeo = new THREE.BoxGeometry(tableW - 0.08, 0.015, tableD - 0.08);
+      const shelf = new THREE.Mesh(shelfGeo, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 }));
+      shelf.position.set(centerX, 0.22, centerZ);
+      tableGroup.add(shelf);
+
+      // Kiện hàng hoàn thiện dự trữ / túi bọc chuyển phát dưới gầm bàn
+      const dispatchBag1 = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.16, 0.24), new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.5 }));
+      dispatchBag1.position.set(centerX - 0.10, 0.22 + 0.08, centerZ);
+      tableGroup.add(dispatchBag1);
+
+      const dispatchBag2 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.14, 0.20), new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.5 }));
+      dispatchBag2.position.set(centerX + 0.18, 0.22 + 0.07, centerZ);
+      tableGroup.add(dispatchBag2);
+
+      // 3. THẢM ĐÁNH DẤU VÙNG TIẾP NHẬN KIỆN HÀNG HOÀN THIỆN (CHỜ SHIPPER LẤY)
+      const matGeo = new THREE.PlaneGeometry(0.38, 0.32);
+      const matEdges = new THREE.EdgesGeometry(matGeo);
+      const dispatchMatLine = new THREE.LineSegments(matEdges, new THREE.LineDashedMaterial({ color: 0x10b981, dashSize: 0.02, gapSize: 0.012, linewidth: 2 }));
+      dispatchMatLine.computeLineDistances();
+      dispatchMatLine.rotation.x = -Math.PI / 2;
+      dispatchMatLine.position.set(centerX, tableH + 0.001, 0.05);
+      tableGroup.add(dispatchMatLine);
+
+      const matFill = new THREE.Mesh(matGeo, new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.14, side: THREE.DoubleSide }));
+      matFill.rotation.x = -Math.PI / 2;
+      matFill.position.copy(dispatchMatLine.position);
+      tableGroup.add(matFill);
+
+      // 4. BẢNG KẸP BIÊN BẢN BÀN GIAO / SỔ KÝ NHẬN SHIPPER Ở GÓC SAU
+      const boardGeo = new THREE.BoxGeometry(0.18, 0.008, 0.24);
+      const boardMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
+      const manifestBoard = new THREE.Mesh(boardGeo, boardMat);
+      manifestBoard.position.set(centerX + 0.22, tableH + 0.004, -0.25);
+      manifestBoard.rotation.y = 0.05;
+      tableGroup.add(manifestBoard);
+
+      const paperGeo = new THREE.PlaneGeometry(0.15, 0.20);
+      const paperMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, side: THREE.DoubleSide });
+      const paper = new THREE.Mesh(paperGeo, paperMat);
+      paper.rotation.x = -Math.PI / 2;
+      paper.position.set(0, 0.005, 0);
+      manifestBoard.add(paper);
+
+      const clip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.012, 0.02), new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 }));
+      clip.position.set(0, 0.008, -0.09);
+      manifestBoard.add(clip);
+
+      // 5. BIỂN TÊN VÙNG BÀN GIAO / CHỜ LẤY HÀNG (RỘNG RÃI, KHÔNG BỊ TRÀN CHỮ)
+      const signCanvas = document.createElement('canvas');
+      signCanvas.width = 640; signCanvas.height = 128;
+      const sCtx = signCanvas.getContext('2d');
+      sCtx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.fill();
+      sCtx.strokeStyle = '#10b981';
+      sCtx.lineWidth = 4;
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.stroke();
+      sCtx.fillStyle = '#10b981';
+      sCtx.font = 'bold 26px sans-serif';
+      sCtx.textAlign = 'center';
+      sCtx.fillText('BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI', 320, 56);
+      sCtx.fillStyle = '#94a3b8';
+      sCtx.font = 'bold 18px monospace';
+      sCtx.fillText('OUTBOUND & COURIER DISPATCH', 320, 98);
+
+      const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(signCanvas), transparent: true }));
+      signSprite.scale.set(0.60, 0.12, 1);
+      signSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
+      tableGroup.add(signSprite);
+    }
+
+    function buildGantryAndCamerasStructure() {
+      const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.65 });
+      const darkClampMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.8 });
+      const tube = 0.04;
+      const gantryZ = -TABLE_DEPTH / 2 + 0.05; // Đặt sát mép sau bàn
+
+      // 1. Cột đứng giàn khung (2 bên, cao 1000mm tính từ mặt bàn)
+      const postH = TOP_FRAME_HEIGHT;
+      const postGeo = new THREE.BoxGeometry(tube, postH, tube);
+      const postOffX = TABLE_WIDTH / 2 - 0.08;
+
+      [-postOffX, postOffX].forEach(x => {
+        const post = new THREE.Mesh(postGeo, steelMat);
+        post.position.set(x, TABLE_HEIGHT + postH / 2, gantryZ);
+        post.castShadow = true;
+        tableGroup.add(post);
+
+        const basePlate = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.01, 0.08), steelMat);
+        basePlate.position.set(x, TABLE_HEIGHT + 0.005, gantryZ);
+        tableGroup.add(basePlate);
+      });
+
+      // 2. Xà ngang trên đỉnh (Cao 1800mm so với mặt đất)
+      const topBeamGeo = new THREE.BoxGeometry(TABLE_WIDTH - 0.08 + tube * 2, tube, tube);
+      const topBeam = new THREE.Mesh(topBeamGeo, steelMat);
+      topBeam.position.set(0, TOTAL_HEIGHT - tube / 2, gantryZ);
+      topBeam.castShadow = true;
+      tableGroup.add(topBeam);
+
+      // ==========================================
+      // CAMERA 1: TOÀN CẢNH (CÓ TAY ĐÒN VƯƠN RA GIỮA BÀN, VUÔNG GÓC 90 ĐỘ)
+      // ==========================================
+      const cam1ArmGroup = new THREE.Group();
+      cam1ArmGroup.position.set(0, TOTAL_HEIGHT - tube / 2, gantryZ);
+
+      // Pát kẹp xà ngang
+      const clamp1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.08), darkClampMat);
+      cam1ArmGroup.add(clamp1);
+
+      // Tay đòn nhô ra phía trước tới giữa mặt bàn (~450mm)
+      const arm1Len = 0.45;
+      const arm1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, arm1Len), steelMat);
+      arm1.position.set(0, 0, arm1Len / 2);
+      arm1.castShadow = true;
+      cam1ArmGroup.add(arm1);
+
+      // Cụm Camera 1: Vuông góc 90 độ chiếu xuống tâm bàn
+      const cam1Group = new THREE.Group();
+      cam1Group.position.set(0, -0.04, arm1Len);
+
+      const cam1Body = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.09, 24), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 }));
+      cam1Body.position.y = -0.045;
+      cam1Body.castShadow = true;
+      cam1Group.add(cam1Body);
+
+      const lens1 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 24), new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1, metalness: 0.9 }));
+      lens1.position.y = -0.095;
+      cam1Group.add(lens1);
+
+      const optic1 = new THREE.Mesh(new THREE.CircleGeometry(0.027, 24), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+      optic1.rotation.x = Math.PI / 2;
+      optic1.position.y = -0.106;
+      cam1Group.add(optic1);
+
+      cam1ArmGroup.add(cam1Group);
+      tableGroup.add(cam1ArmGroup);
+
+      // ==========================================
+      // CAMERA 2: QUÉT MÃ VẬN ĐƠN (CÓ THANH THẢ DỌC VÀ TAY ĐÒN VƯƠN RA TRƯỚC)
+      // ==========================================
+      const cam2Height = TABLE_HEIGHT + 0.62; // Cách mặt bàn 620mm (thuộc khoảng 500-700mm)
+      const topBeamY = TOTAL_HEIGHT - tube / 2;
+      const cam2ArmX = ZONE_X;
+
+      const cam2Assembly = new THREE.Group();
+      cam2Assembly.position.set(cam2ArmX, 0, gantryZ);
+
+      // Cùm bắt đỉnh xà
+      const topClamp2 = new THREE.Mesh(new THREE.BoxGeometry(0.065, tube + 0.02, tube + 0.02), darkClampMat);
+      topClamp2.position.set(0, topBeamY, 0);
+      cam2Assembly.add(topClamp2);
+
+      // Thanh giằng thả dọc từ xà trên xuống
+      const dropH = topBeamY - cam2Height;
+      const dropTube = new THREE.Mesh(new THREE.BoxGeometry(0.03, dropH, 0.03), steelMat);
+      dropTube.position.set(0, topBeamY - dropH / 2, 0);
+      dropTube.castShadow = true;
+      cam2Assembly.add(dropTube);
+
+      // Khớp điều chỉnh cao độ & núm vặn
+      const collar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.05), darkClampMat);
+      collar.position.set(0, cam2Height, 0);
+      cam2Assembly.add(collar);
+
+      // Tay đòn vươn ngang ra phía trước tới đúng tâm vùng quét
+      const arm2Len = Math.abs(ZONE_Z - gantryZ);
+      const arm2 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, arm2Len), steelMat);
+      arm2.position.set(0, cam2Height, arm2Len / 2);
+      arm2.castShadow = true;
+      cam2Assembly.add(arm2);
+
+      // Cụm Camera 2
+      const cam2Group = new THREE.Group();
+      cam2Group.position.set(0, cam2Height - 0.04, arm2Len);
+
+      const cam2Body = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.032, 0.08, 20), new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 }));
+      cam2Body.castShadow = true;
+      cam2Group.add(cam2Body);
+
+      // Đèn trợ sáng LED vòng quanh ống kính
+      const ringLight = new THREE.Mesh(new THREE.TorusGeometry(0.032, 0.005, 12, 24), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      ringLight.rotation.x = Math.PI / 2;
+      ringLight.position.y = -0.041;
+      cam2Group.add(ringLight);
+
+      const lens2 = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.015, 20), new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.1, metalness: 0.9 }));
+      lens2.position.y = -0.048;
+      cam2Group.add(lens2);
+
+      cam2Assembly.add(cam2Group);
+      tableGroup.add(cam2Assembly);
+
+      // Cập nhật vị trí quang học cho tia FOV
+      scene.updateMatrixWorld(true);
+      optic1.getWorldPosition(cam1WorldPos);
+      lens2.getWorldPosition(cam2WorldPos);
+
+      // Cập nhật vị trí camera PiP 1 & 2 trùng khớp vị trí thấu kính thực tế
+      pipCam1.position.copy(cam1WorldPos);
+      pipCam1.up.set(0, 0, -1);
+      pipCam1.lookAt(cam1WorldPos.x, TABLE_HEIGHT, cam1WorldPos.z);
+      updatePipCam1Fov();
+
+      pipCam2.position.copy(cam2WorldPos);
+      pipCam2.up.set(0, 0, -1);
+      pipCam2.lookAt(cam2WorldPos.x, TABLE_HEIGHT, cam2WorldPos.z);
+      pipCam2.updateProjectionMatrix();
+
+      // Xây dựng hình nón tia quét FOV
+      buildFovCones();
+    }
+
+    function buildFovCones() {
+      while (fovGroup.children.length > 0) {
+        fovGroup.remove(fovGroup.children[0]);
+      }
+
+      function makeCone(apex, baseCenter, radTop, radBotX, radBotZ, colorHex, opacity) {
+        const seg = 32;
+        const verts = [];
+        const indices = [];
+
+        // Vòng đỉnh tại ống kính
+        for (let i = 0; i < seg; i++) {
+          const a = (i / seg) * Math.PI * 2;
+          verts.push(apex.x + Math.cos(a) * radTop, apex.y, apex.z + Math.sin(a) * radTop);
+        }
+        // Vòng đáy trên mặt bàn
+        for (let i = 0; i < seg; i++) {
+          const a = (i / seg) * Math.PI * 2;
+          verts.push(baseCenter.x + Math.cos(a) * radBotX, baseCenter.y, baseCenter.z + Math.sin(a) * radBotZ);
+        }
+        for (let i = 0; i < seg; i++) {
+          const next = (i + 1) % seg;
+          indices.push(i, seg + i, next);
+          indices.push(next, seg + i, seg + next);
+        }
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        geom.setIndex(indices);
+        geom.computeVertexNormals();
+
+        const mat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: opacity, side: THREE.DoubleSide, depthWrite: false });
+        const mesh = new THREE.Mesh(geom, mat);
+
+        // Tia gióng quang học kỹ thuật
+        const wirePos = [];
+        for (let i = 0; i < seg; i += 4) {
+          wirePos.push(verts[i * 3], verts[i * 3 + 1], verts[i * 3 + 2]);
+          wirePos.push(verts[(seg + i) * 3], verts[(seg + i) * 3 + 1], verts[(seg + i) * 3 + 2]);
+        }
+        for (let i = 0; i < seg; i++) {
+          const next = (i + 1) % seg;
+          wirePos.push(verts[(seg + i) * 3], verts[(seg + i) * 3 + 1], verts[(seg + i) * 3 + 2]);
+          wirePos.push(verts[(seg + next) * 3], verts[(seg + next) * 3 + 1], verts[(seg + next) * 3 + 2]);
+        }
+        const wireGeom = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(wirePos, 3));
+        const wire = new THREE.LineSegments(wireGeom, new THREE.LineBasicMaterial({ color: colorHex, transparent: true, opacity: opacity * 2.5 }));
+
+        const grp = new THREE.Group();
+        grp.add(mesh);
+        grp.add(wire);
+        return grp;
+      }
+
+      // Nón Cam 1: Đỉnh tại thấu kính Cam 1, đáy mở rộng bao quát mặt bàn
+      const cone1 = makeCone(cam1WorldPos, new THREE.Vector3(0, TABLE_HEIGHT, 0.05), 0.03, 0.75, 0.50, 0x38bdf8, 0.14);
+      fovGroup.add(cone1);
+
+      // Nón Cam 2: Đỉnh tại thấu kính Cam 2, đáy tập trung vào vùng quét mã tem SPX
+      const cone2 = makeCone(cam2WorldPos, new THREE.Vector3(ZONE_X, TABLE_HEIGHT, ZONE_Z), 0.02, 0.16, 0.22, 0x10b981, 0.2);
+      fovGroup.add(cone2);
+    }
+
+    // TẠO TEXTURE BÓNG KHÍ XỐP NỔ BẢO VỆ CHÂN THỰC
+    function createBubbleWrapTexture() {
+      const c = document.createElement('canvas');
+      c.width = 256;
+      c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = 'rgba(240, 246, 252, 0.45)';
+      ctx.fillRect(0, 0, 256, 256);
+
+      const rad = 13;
+      const step = 32;
+      for (let y = 0; y < 256 + step; y += step) {
+        for (let x = 0; x < 256 + step; x += step) {
+          const cx = (Math.floor(y / step) % 2 === 0) ? x : x + step / 2;
+          // Vòng tròn bóng khí
+          ctx.beginPath();
+          ctx.arc(cx, y, rad, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(186, 210, 235, 0.7)';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // Gradient nổi 3D của bóng khí
+          const grad = ctx.createRadialGradient(cx - rad * 0.35, y - rad * 0.35, 1, cx, y, rad);
+          grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+          grad.addColorStop(0.5, 'rgba(224, 242, 254, 0.5)');
+          grad.addColorStop(1, 'rgba(186, 215, 245, 0.2)');
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          // Đốm sáng phản chiếu
+          ctx.beginPath();
+          ctx.arc(cx - rad * 0.4, y - rad * 0.4, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.fill();
+        }
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(5, 4);
+      return tex;
+    }
+
+    // TẠO DỤNG CỤ CẮT DÁN BĂNG DÍNH CẦM TAY MÀU CAM (TAPE DISPENSER GUN)
+    function createTapeDispenserMesh() {
+      const g = new THREE.Group();
+      const orangeMat = new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.35 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
+      const tapeRollMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3 });
+      const metalMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.2 });
+
+      // Tay nắm công thái học
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.11, 16), darkMat);
+      handle.rotation.z = Math.PI / 4;
+      handle.position.set(-0.035, 0.035, 0);
+      g.add(handle);
+
+      // Thân máy dán băng dính cam
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.045, 0.055), orangeMat);
+      body.position.set(0.02, 0.075, 0);
+      g.add(body);
+
+      // Cuộn băng dính lớn
+      const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.05, 24), tapeRollMat);
+      roll.rotation.x = Math.PI / 2;
+      roll.position.set(0.028, 0.115, 0);
+      g.add(roll);
+
+      // Trục xoay cuộn
+      const core = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.052, 16), darkMat);
+      core.rotation.x = Math.PI / 2;
+      core.position.copy(roll.position);
+      g.add(core);
+
+      // Lưỡi cắt răng cưa thép & con lăn ép
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.003, 0.052), metalMat);
+      blade.position.set(0.075, 0.055, 0);
+      g.add(blade);
+
+      const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.05, 12), metalMat);
+      roller.rotation.x = Math.PI / 2;
+      roller.position.set(0.068, 0.04, 0);
+      g.add(roller);
+
+      g.scale.set(0.85, 0.85, 0.85);
+      return g;
+    }
+
+    function buildInteractivePackingObjects() {
+      // 1. VÙNG QUÉT MÃ VẬN ĐƠN (NÉT ĐỨT TRÊN BÀN - DẠNG DỌC A6)
+      const zoneW = 0.22, zoneD = 0.28;
+      const zoneGeo = new THREE.PlaneGeometry(zoneW, zoneD);
+      const zoneEdges = new THREE.EdgesGeometry(zoneGeo);
+      const dashedMat = new THREE.LineDashedMaterial({ color: 0x10b981, dashSize: 0.025, gapSize: 0.015, linewidth: 2 });
+      const zoneBorder = new THREE.LineSegments(zoneEdges, dashedMat);
+      zoneBorder.computeLineDistances();
+      zoneBorder.rotation.x = -Math.PI / 2;
+      zoneBorder.position.set(ZONE_X, TABLE_HEIGHT + 0.001, ZONE_Z);
+      simGroup.add(zoneBorder);
+
+      // Nền sáng nhẹ vùng quét
+      const zonePlane = new THREE.Mesh(zoneGeo, new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.15, side: THREE.DoubleSide }));
+      zonePlane.rotation.x = -Math.PI / 2;
+      zonePlane.position.copy(zoneBorder.position);
+      simGroup.add(zonePlane);
+
+      // Tia Laser đỏ của Cam 2
+      const laserGeo = new THREE.PlaneGeometry(0.20, 0.006);
+      const laserMat = new THREE.MeshBasicMaterial({ color: 0xff1e1e, transparent: true, opacity: 0.95, side: THREE.DoubleSide });
+      camLaserLine = new THREE.Mesh(laserGeo, laserMat);
+      camLaserLine.rotation.x = -Math.PI / 2;
+      camLaserLine.position.set(ZONE_X, TABLE_HEIGHT + 0.005, ZONE_Z);
+      camLaserLine.visible = false;
+      simGroup.add(camLaserLine);
+
+      // 2. SẢN PHẨM CẦN ĐÓNG GÓI (ĐẶT CHUẨN XÁC GIỮA THẢM PICK ZONE BÀN BÊN CẠNH)
+      const prodW = 0.20, prodH = 0.11, prodD = 0.16;
+      const prodMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.35, metalness: 0.2 });
+      productMesh = new THREE.Mesh(new THREE.BoxGeometry(prodW, prodH, prodD), prodMat);
+      // Decal tem nhãn mặt trên sản phẩm
+      const prodDecal = new THREE.Mesh(new THREE.PlaneGeometry(prodW * 0.75, prodD * 0.75), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      prodDecal.rotation.x = -Math.PI / 2;
+      prodDecal.position.y = prodH / 2 + 0.001;
+      productMesh.add(prodDecal);
+      productMesh.position.set(-1.35, TABLE_HEIGHT + prodH / 2, 0.10);
+      productMesh.castShadow = true;
+      simGroup.add(productMesh);
+
+      // 3. PHIẾU IN MÃ QR VẬN ĐƠN (TEM SPX A6 TIÊU CHUẨN 110x155mm)
+      const labelW = 0.11, labelD = 0.155;
+      const qrCanvas = createRealisticQRCanvas();
+      const qrTexture = new THREE.CanvasTexture(qrCanvas);
+      qrTexture.minFilter = THREE.LinearFilter;
+      qrTexture.magFilter = THREE.LinearFilter;
+      qrTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      const qrGeo = new THREE.PlaneGeometry(labelW, labelD);
+      const qrMat = new THREE.MeshBasicMaterial({ map: qrTexture, side: THREE.DoubleSide });
+
+      qrLabelMesh = new THREE.Mesh(qrGeo, qrMat);
+      qrLabelMesh.rotation.x = -Math.PI / 2;
+      // Ban đầu đặt gọn gàng trong khay nhận đơn/tem ở góc sau bên trái bàn (-0.50, -0.22)
+      qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
+      simGroup.add(qrLabelMesh);
+
+      // Khay kim loại đựng phiếu đơn/tem A6 ở góc sau bên trái
+      const labelTrayGeo = new THREE.BoxGeometry(labelW + 0.03, 0.004, labelD + 0.03);
+      const labelTray = new THREE.Mesh(labelTrayGeo, new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.6 }));
+      labelTray.position.set(-0.50, TABLE_HEIGHT + 0.002, -0.22);
+      simGroup.add(labelTray);
+
+      // Thảm vạch kẻ nét đứt đánh dấu ô tiếp nhận sản phẩm ở góc trước bên trái (-0.50, +0.12)
+      // Tách biệt hoàn toàn với khay tem (cách 34cm theo trục Z) và hộp carton (cách 20cm theo trục X)
+      const stageMatGeo = new THREE.PlaneGeometry(0.24, 0.20);
+      const stageEdges = new THREE.EdgesGeometry(stageMatGeo);
+      const stageMatLine = new THREE.LineSegments(stageEdges, new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 0.015, gapSize: 0.01, linewidth: 1.5 }));
+      stageMatLine.computeLineDistances();
+      stageMatLine.rotation.x = -Math.PI / 2;
+      stageMatLine.position.set(-0.50, TABLE_HEIGHT + 0.001, 0.12);
+      simGroup.add(stageMatLine);
+
+      // 4. DỤNG CỤ CẮT BĂNG DÍNH CẦM TAY MÀU CAM (Y HỆT TRÊN BÀN ĐÓNG HÀNG TRONG ẢNH MẪU)
+      tapeDispenserMesh = createTapeDispenserMesh();
+      tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
+      simGroup.add(tapeDispenserMesh);
+
+      // 5. THÙNG CARTON ĐÓNG HÀNG (BOX)
+      const boxW = 0.28, boxH = 0.16, boxD = 0.22;
+      boxGroup = new THREE.Group();
+      boxGroup.position.set(PACK_X, TABLE_HEIGHT, PACK_Z);
+
+      // Đáy và 4 vách hộp
+      const cartonMat = new THREE.MeshStandardMaterial({ color: 0xb58254, roughness: 0.9 });
+      const wallThick = 0.008;
+
+      // Đáy
+      const bottom = new THREE.Mesh(new THREE.BoxGeometry(boxW, wallThick, boxD), cartonMat);
+      bottom.position.set(0, wallThick / 2, 0);
+      bottom.castShadow = true;
+      boxGroup.add(bottom);
+
+      // 4 vách bên
+      const wallFront = new THREE.Mesh(new THREE.BoxGeometry(boxW, boxH, wallThick), cartonMat);
+      wallFront.position.set(0, boxH / 2, boxD / 2 - wallThick / 2);
+      wallFront.castShadow = true;
+      boxGroup.add(wallFront);
+
+      const wallBack = wallFront.clone();
+      wallBack.position.z = -boxD / 2 + wallThick / 2;
+      boxGroup.add(wallBack);
+
+      const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(wallThick, boxH, boxD - wallThick * 2), cartonMat);
+      wallLeft.position.set(-boxW / 2 + wallThick / 2, boxH / 2, 0);
+      wallLeft.castShadow = true;
+      boxGroup.add(wallLeft);
+
+      const wallRight = wallLeft.clone();
+      wallRight.position.x = boxW / 2 - wallThick / 2;
+      boxGroup.add(wallRight);
+
+      // 4 NẮP THÙNG (FLAPS) ĐỂ ĐÓNG MỞ
+      boxFlaps = [];
+      const flapThick = 0.004;
+
+      // Nắp trước & sau
+      const flapFBGeo = new THREE.BoxGeometry(boxW, flapThick, boxD / 2);
+      const flapFrontPivot = new THREE.Group();
+      flapFrontPivot.position.set(0, boxH, boxD / 2);
+      const flapF = new THREE.Mesh(flapFBGeo, cartonMat);
+      flapF.position.set(0, 0, -boxD / 4);
+      flapFrontPivot.add(flapF);
+      flapFrontPivot.rotation.x = -Math.PI * 0.45; // Đang mở hé
+      boxGroup.add(flapFrontPivot);
+      boxFlaps.push({ pivot: flapFrontPivot, openRot: -Math.PI * 0.45, closeRot: 0, axis: 'x' });
+
+      const flapBackPivot = new THREE.Group();
+      flapBackPivot.position.set(0, boxH, -boxD / 2);
+      const flapB = new THREE.Mesh(flapFBGeo, cartonMat);
+      flapB.position.set(0, 0, boxD / 4);
+      flapBackPivot.add(flapB);
+      flapBackPivot.rotation.x = Math.PI * 0.45; // Đang mở
+      boxGroup.add(flapBackPivot);
+      boxFlaps.push({ pivot: flapBackPivot, openRot: Math.PI * 0.45, closeRot: 0, axis: 'x' });
+
+      // Nắp trái & phải
+      const flapLRGeo = new THREE.BoxGeometry(boxW / 2, flapThick, boxD);
+      const flapLeftPivot = new THREE.Group();
+      flapLeftPivot.position.set(-boxW / 2, boxH, 0);
+      const flapL = new THREE.Mesh(flapLRGeo, cartonMat);
+      flapL.position.set(boxW / 4, 0, 0);
+      flapLeftPivot.add(flapL);
+      flapLeftPivot.rotation.z = Math.PI * 0.45;
+      boxGroup.add(flapLeftPivot);
+      boxFlaps.push({ pivot: flapLeftPivot, openRot: Math.PI * 0.45, closeRot: 0, axis: 'z' });
+
+      const flapRightPivot = new THREE.Group();
+      flapRightPivot.position.set(boxW / 2, boxH, 0);
+      const flapR = new THREE.Mesh(flapLRGeo, cartonMat);
+      flapR.position.set(-boxW / 4, 0, 0);
+      flapRightPivot.add(flapR);
+      flapRightPivot.rotation.z = -Math.PI * 0.45;
+      boxGroup.add(flapRightPivot);
+      boxFlaps.push({ pivot: flapRightPivot, openRot: -Math.PI * 0.45, closeRot: 0, axis: 'z' });
+
+      // DẢI BĂNG DÍNH DÁN NẮP THÙNG (TAPE)
+      const tapeGeo = new THREE.BoxGeometry(boxW + 0.04, 0.002, 0.048);
+      const tapeMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.35 });
+      tapeStripMesh = new THREE.Mesh(tapeGeo, tapeMat);
+      tapeStripMesh.position.set(0, boxH + 0.002, 0);
+      tapeStripMesh.visible = false;
+      boxGroup.add(tapeStripMesh);
+
+      // 6. LỚP XỐP NỔ BỌC NGOÀI HỘP CARTON (BUBBLE WRAP CUSHION)
+      bubbleWrapGroup = new THREE.Group();
+      const wrapGeo = new THREE.BoxGeometry(boxW + 0.026, boxH + 0.026, boxD + 0.026);
+      const bubbleTex = createBubbleWrapTexture();
+      const bubbleMat = new THREE.MeshStandardMaterial({
+        map: bubbleTex,
+        color: 0xf8fafc,
+        transparent: true,
+        opacity: 0.88,
+        roughness: 0.25,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+      bubbleWrapMesh = new THREE.Mesh(wrapGeo, bubbleMat);
+      bubbleWrapMesh.position.set(0, boxH / 2, 0);
+      bubbleWrapGroup.add(bubbleWrapMesh);
+
+      // Dải băng dính niêm phong lớp bọc xốp ngoài
+      const bubbleTapeGeo = new THREE.BoxGeometry(boxW + 0.03, 0.002, 0.05);
+      bubbleTapeMesh = new THREE.Mesh(bubbleTapeGeo, new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.35 }));
+      bubbleTapeMesh.position.set(0, boxH + 0.015, 0);
+      bubbleWrapGroup.add(bubbleTapeMesh);
+
+      bubbleWrapGroup.visible = false;
+      boxGroup.add(bubbleWrapGroup);
+
+      simGroup.add(boxGroup);
+    }
+
+    // TẠO TEM VẬN ĐƠN SPX GIỐNG 100% ẢNH THỰC TẾ (SPX, HN-20-10-TX05-N, QR, BARCODE, 0 VND)
+    function createRealisticQRCanvas() {
+      const c = document.createElement('canvas');
+      c.width = 720;
+      c.height = 1040;
+      const ctx = c.getContext('2d');
+
+      // Nền trắng tinh khiết chuẩn tem nhiệt Shopee/SPX
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // Viền tem
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(14, 14, c.width - 28, c.height - 28);
+
+      // 1. HEADER: LOGO SPX + BARCODE PHỤ TRÊN ĐỈNH
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 62px sans-serif';
+      ctx.fillText('SPX', 38, 80);
+
+      // 1D Barcode góc trên bên phải
+      const topBx = 360, topBy = 28, topBh = 42;
+      ctx.fillStyle = '#000000';
+      for (let i = 0; i < 48; i++) {
+        const w = (i % 3 === 0 || i % 7 === 0) ? 5 : 2.5;
+        ctx.fillRect(topBx + i * 6.5, topBy, w, topBh);
+      }
+      ctx.font = '16px JetBrains Mono, monospace';
+      ctx.fillText('SPX-VN-889921478', topBx + 18, topBy + 58);
+
+      // Kẻ vạch ngang chia Header
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(24, 102, c.width - 48, 3);
+
+      // 2. KHUNG ROUTE CODE & QR CODE CHÍNH (ĐẶC TRƯNG TEM SPX TRONG ẢNH MẪU)
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(28, 120, c.width - 56, 310);
+
+      // Cột trái: Mã định tuyến lớn
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 38px JetBrains Mono, sans-serif';
+      ctx.fillText('HN-20-10-TX05-N', 42, 175);
+
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 20px JetBrains Mono, sans-serif';
+      ctx.fillText('Nội thành Hà Nội | Tuyến 05', 42, 210);
+
+      ctx.font = '900 34px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('TV-C-29', 42, 260);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '17px sans-serif';
+      ctx.fillText('SOC / HUB Phân loại trung tâm', 42, 295);
+      ctx.fillText('Người gửi: BETACAM Store', 42, 330);
+      ctx.fillText('Người nhận: Nguyễn Văn A (098***)', 42, 365);
+      ctx.fillText('Hà Nội, Việt Nam', 42, 400);
+
+      // Cột phải: MÃ QR CODE CHÍNH ĐỘ PHÂN GIẢI CAO (Y hệt góc phải của tem trong ảnh mẫu)
+      const qrx = 430, qry = 135, qrs = 230;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(qrx, qry, qrs, qrs);
+
+      function drawEye(ex, ey) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(ex + 14, ey + 14, 58, 58);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(ex + 26, ey + 26, 34, 34);
+      }
+      drawEye(qrx, qry);
+      drawEye(qrx + qrs - 86, qry);
+      drawEye(qrx, qry + qrs - 86);
+
+      // Hạt ma trận QR chân thực
+      const grid = 16, cSize = 11;
+      for (let r = 0; r < grid; r++) {
+        for (let col = 0; col < grid; col++) {
+          if ((r < 5 && col < 5) || (r < 5 && col > grid - 6) || (r > grid - 6 && col < 5)) continue;
+          if (Math.random() > 0.44) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(qrx + 30 + col * cSize, qry + 30 + r * cSize, cSize - 2, cSize - 2);
+          }
+        }
+      }
+
+      ctx.font = 'bold 15px JetBrains Mono, monospace';
+      ctx.fillStyle = '#0f172a';
+      ctx.textAlign = 'center';
+      ctx.fillText('HN-20-10', qrx + qrs / 2, qry + qrs + 22);
+      ctx.fillText('HN14.02 N', qrx + qrs / 2, qry + qrs + 38);
+      ctx.textAlign = 'left';
+
+      // 3. THÔNG TIN CHỈ DẪN & TIỀN THU (COD 0 VND NHƯ TRONG ẢNH MẪU)
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(28, 448, c.width - 56, 175);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.strokeRect(28, 448, c.width - 56, 175);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText('Chỉ dẫn giao hàng: Không cho xem hàng / Đồng kiểm', 42, 482);
+
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('Nội dung hàng: [Gói 01 Camera Giám Sát Đóng Hàng]', 42, 518);
+      ctx.fillText('Khối lượng: 1.250 g | Kích thước: 30x20x15 cm', 42, 552);
+
+      ctx.font = '900 42px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('0 VND', 42, 604);
+
+      ctx.font = 'bold 19px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('25-09-2026 15:06', 430, 604);
+
+      // 4. MÃ VẠCH 1D BARCODE DƯỚI ĐÁY SIÊU RÕ NÉT
+      const barX = 46, barY = 645, barH = 135;
+      ctx.fillStyle = '#000000';
+      let cx = barX;
+      for (let i = 0; i < 94; i++) {
+        const bw = (i % 4 === 0 || i % 7 === 0) ? 8 : 4;
+        ctx.fillRect(cx, barY, bw, barH);
+        cx += bw + 3.1;
+      }
+
+      ctx.font = 'bold 28px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPXVN04589921478', c.width / 2, barY + barH + 42);
+
+      // 5. BANNER ĐỔI TRẢ MIỄN PHÍ 100% (GIỐNG GÓC DƯỚI ẢNH MẪU)
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(48, 865, c.width - 96, 120);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText('ĐỔI TRẢ MIỄN PHÍ 100%', c.width / 2, 920);
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillStyle = '#475569';
+      ctx.fillText('Áp dụng chính sách bảo vệ người mua', c.width / 2, 960);
+      ctx.textAlign = 'left';
+
+      return c;
+    }
+
+    function buildDimensionLines() {
+      const dimColor = 0xfacc15;
+      const lineMat = new THREE.LineBasicMaterial({ color: dimColor, linewidth: 1.5 });
+
+      function createDim(p1, p2, offAxis, offVal, text) {
+        const grp = new THREE.Group();
+        const start = p1.clone();
+        const end = p2.clone();
+        if (offAxis === 'x') { start.x += offVal; end.x += offVal; }
+        if (offAxis === 'y') { start.y += offVal; end.y += offVal; }
+        if (offAxis === 'z') { start.z += offVal; end.z += offVal; }
+
+        const geom = new THREE.BufferGeometry().setFromPoints([start, end]);
+        grp.add(new THREE.Line(geom, lineMat));
+
+        // Nhãn chữ
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.roundRect(4, 4, 248, 56, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2;
+        ctx.roundRect(4, 4, 248, 56, 12);
+        ctx.stroke();
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 24px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 34);
+
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true }));
+        sprite.scale.set(0.26, 0.065, 1);
+        const mid = start.clone().add(end).multiplyScalar(0.5);
+        sprite.position.copy(mid);
+        sprite.position.y += 0.035;
+        grp.add(sprite);
+
+        dimGroup.add(grp);
+      }
+
+      // Dài 1500 mm
+      createDim(new THREE.Vector3(-TABLE_WIDTH/2, 0, TABLE_DEPTH/2), new THREE.Vector3(TABLE_WIDTH/2, 0, TABLE_DEPTH/2), 'z', 0.15, "1500 mm");
+      // Rộng 1000 mm
+      createDim(new THREE.Vector3(TABLE_WIDTH/2, 0, -TABLE_DEPTH/2), new THREE.Vector3(TABLE_WIDTH/2, 0, TABLE_DEPTH/2), 'x', 0.15, "1000 mm");
+      // Cao bàn 800 mm
+      createDim(new THREE.Vector3(-TABLE_WIDTH/2, 0, TABLE_DEPTH/2), new THREE.Vector3(-TABLE_WIDTH/2, TABLE_HEIGHT, TABLE_DEPTH/2), 'x', -0.15, "800 mm");
+      // Tổng cao 1800 mm
+      createDim(new THREE.Vector3(-TABLE_WIDTH/2, 0, -TABLE_DEPTH/2), new THREE.Vector3(-TABLE_WIDTH/2, TOTAL_HEIGHT, -TABLE_DEPTH/2), 'x', -0.28, "1800 mm (Tổng)");
+    }
+
+    // ==========================================
+    // DỰNG NGƯỜI THẬT THAO TÁC 3D (HUMAN WORKER RIG & IK)
+    // ==========================================
+    function buildHumanWorker() {
+      workerGroup = new THREE.Group();
+      // Ban đầu công nhân đứng trước BÀN ĐỂ SẢN PHẨM bên cạnh (X = -1.35, Z = 0.68)
+      workerGroup.position.set(-1.35, 0, 0.68);
+
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xf3c7aa, roughness: 0.6 });
+      const darkUniformMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+      const blueShirtMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.6 });
+      const vestYellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.45 });
+      const reflectiveStripeMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2, metalness: 0.5 });
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+      const gloveMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.4 });
+      const hairCapMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+
+      // 1. Hai chân có khớp hông xoay độc lập (để diễn hoạt bước đi tự nhiên khi chuyển bàn)
+      const hipY = 0.78;
+      const legGeo = new THREE.CylinderGeometry(0.062, 0.056, 0.72, 16);
+      legGeo.translate(0, -0.36, 0);
+
+      leftLegGroup = new THREE.Group();
+      leftLegGroup.position.set(-0.11, hipY, 0);
+      const lLegMesh = new THREE.Mesh(legGeo, darkUniformMat);
+      lLegMesh.castShadow = true;
+      leftLegGroup.add(lLegMesh);
+      const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.08, 0.22), shoeMat);
+      leftShoe.position.set(0, -0.74, -0.04);
+      leftShoe.castShadow = true;
+      leftLegGroup.add(leftShoe);
+      workerGroup.add(leftLegGroup);
+
+      rightLegGroup = new THREE.Group();
+      rightLegGroup.position.set(0.11, hipY, 0);
+      const rLegMesh = new THREE.Mesh(legGeo, darkUniformMat);
+      rLegMesh.castShadow = true;
+      rightLegGroup.add(rLegMesh);
+      const rightShoe = leftShoe.clone();
+      rightShoe.position.set(0, -0.74, -0.04);
+      rightLegGroup.add(rightShoe);
+      workerGroup.add(rightLegGroup);
+
+      // 2. Hông & Thắt lưng
+      const pelvis = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.16, 0.24), darkUniformMat);
+      pelvis.position.set(0, 0.82, 0);
+      pelvis.castShadow = true;
+      workerGroup.add(pelvis);
+
+      const belt = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.04, 0.25), shoeMat);
+      belt.position.set(0, 0.87, 0);
+      workerGroup.add(belt);
+
+      // 3. Thân trên & Áo gile phản quang
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.46, 0.24), blueShirtMat);
+      torso.position.set(0, 1.12, 0);
+      torso.castShadow = true;
+      workerGroup.add(torso);
+
+      const vest = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.44, 0.25), vestYellowMat);
+      vest.position.set(0, 1.12, 0);
+      workerGroup.add(vest);
+
+      const stripeL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.44, 0.254), reflectiveStripeMat);
+      stripeL.position.set(-0.10, 1.12, 0);
+      workerGroup.add(stripeL);
+
+      const stripeR = stripeL.clone();
+      stripeR.position.x = 0.10;
+      workerGroup.add(stripeR);
+
+      // Thẻ nhân viên đóng gói
+      const badgeMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.07), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+      badgeMesh.position.set(0.10, 1.18, -0.128);
+      workerGroup.add(badgeMesh);
+
+      // 4. Cổ và Đầu
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.08, 16), skinMat);
+      neck.position.set(0, 1.38, 0);
+      workerGroup.add(neck);
+
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 20, 20), skinMat);
+      head.position.set(0, 1.48, 0);
+      head.scale.set(0.95, 1.05, 1.0);
+      head.castShadow = true;
+      workerGroup.add(head);
+
+      // Mũ lưỡi trai kho vận
+      const capCrown = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 16, 0, Math.PI * 2, 0, Math.PI / 2), hairCapMat);
+      capCrown.position.set(0, 1.50, 0);
+      workerGroup.add(capCrown);
+
+      const capBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.015, 16, 1, false, Math.PI * 0.75, Math.PI * 0.5), hairCapMat);
+      capBrim.rotation.x = -Math.PI * 0.08;
+      capBrim.position.set(0, 1.51, -0.06);
+      workerGroup.add(capBrim);
+
+      // Kính bảo hộ lao động trong suốt
+      const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.035, 0.04), new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75, roughness: 0.1 }));
+      glasses.position.set(0, 1.48, -0.095);
+      workerGroup.add(glasses);
+
+      // 5. Khớp vai gắn liền với thân người
+      const shoulderL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), vestYellowMat);
+      shoulderL.position.copy(localLeftShoulder);
+      workerGroup.add(shoulderL);
+
+      const shoulderR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), vestYellowMat);
+      shoulderR.position.copy(localRightShoulder);
+      workerGroup.add(shoulderR);
+
+      // 6. CÁNH TAY ĐỘNG HỌC (THÊM VÀO SCENE ĐỂ KẾT NỐI KHÔNG GIAN TOÀN CỤC)
+      const armGeoL1 = new THREE.CylinderGeometry(0.034, 0.03, 1, 16);
+      armGeoL1.translate(0, 0.5, 0);
+      const armGeoL2 = new THREE.CylinderGeometry(0.03, 0.026, 1, 16);
+      armGeoL2.translate(0, 0.5, 0);
+
+      const lUpper = new THREE.Mesh(armGeoL1, blueShirtMat);
+      const lForearm = new THREE.Mesh(armGeoL2, skinMat);
+      const lElbow = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), blueShirtMat);
+      const lHand = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.04, 0.09), gloveMat);
+      lHand.castShadow = true;
+
+      scene.add(lUpper);
+      scene.add(lForearm);
+      scene.add(lElbow);
+      scene.add(lHand);
+
+      const armGeoR1 = armGeoL1.clone();
+      const armGeoR2 = armGeoL2.clone();
+      const rUpper = new THREE.Mesh(armGeoR1, blueShirtMat);
+      const rForearm = new THREE.Mesh(armGeoR2, skinMat);
+      const rElbow = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), blueShirtMat);
+      const rHand = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.04, 0.09), gloveMat);
+      rHand.castShadow = true;
+
+      scene.add(rUpper);
+      scene.add(rForearm);
+      scene.add(rElbow);
+      scene.add(rHand);
+
+      leftArmParts = { upper: lUpper, forearm: lForearm, elbowMesh: lElbow, hand: lHand };
+      rightArmParts = { upper: rUpper, forearm: rForearm, elbowMesh: rElbow, hand: rHand };
+
+      updateWorkerArms();
+    }
+
+    function linkBone(mesh, pA, pB) {
+      const v = new THREE.Vector3().subVectors(pB, pA);
+      const len = v.length();
+      mesh.position.copy(pA);
+      mesh.scale.set(1, Math.max(len, 0.001), 1);
+      const axis = new THREE.Vector3(0, 1, 0);
+      mesh.quaternion.setFromUnitVectors(axis, v.clone().normalize());
+    }
+
+    function calcElbow(shoulder, hand, isRight) {
+      const dir = new THREE.Vector3().subVectors(hand, shoulder);
+      const dist = Math.min(dir.length(), 0.55);
+      const mid = new THREE.Vector3().addVectors(shoulder, hand).multiplyScalar(0.5);
+
+      const sideSign = isRight ? 1 : -1;
+      const bendAmount = Math.max(0.04, Math.sqrt(Math.max(0, 0.28 * 0.28 - (dist * 0.5) * (dist * 0.5))));
+
+      const elbow = mid.clone();
+      elbow.y -= bendAmount * 0.65 + 0.06;
+      elbow.x += sideSign * (bendAmount * 0.55 + 0.06);
+      elbow.z += 0.04;
+      return elbow;
+    }
+
+    function updateWorkerArms() {
+      if (!leftArmParts.upper || !rightArmParts.upper) return;
+
+      currentLHand.lerp(targetLHand, 0.18);
+      currentRHand.lerp(targetRHand, 0.18);
+
+      const curLShoulder = workerGroup.localToWorld(localLeftShoulder.clone());
+      const curRShoulder = workerGroup.localToWorld(localRightShoulder.clone());
+
+      // Cập nhật tay trái
+      const leftElbow = calcElbow(curLShoulder, currentLHand, false);
+      linkBone(leftArmParts.upper, curLShoulder, leftElbow);
+      linkBone(leftArmParts.forearm, leftElbow, currentLHand);
+      leftArmParts.elbowMesh.position.copy(leftElbow);
+      leftArmParts.hand.position.copy(currentLHand);
+
+      // Cập nhật tay phải
+      const rightElbow = calcElbow(curRShoulder, currentRHand, true);
+      linkBone(rightArmParts.upper, curRShoulder, rightElbow);
+      linkBone(rightArmParts.forearm, rightElbow, currentRHand);
+      rightArmParts.elbowMesh.position.copy(rightElbow);
+      rightArmParts.hand.position.copy(currentRHand);
+    }
+
+    // ==========================================
+    // QUY TRÌNH ĐÓNG GÓI 8 BƯỚC BỌC XỐP NGOÀI HỘP
+    // ==========================================
+    function runNextPackingStep() {
+      initAudio();
+      if (packingStep === 0) {
+        step1_PickProduct();
+      } else if (packingStep === 1) {
+        step2_StageOnTable();
+      } else if (packingStep === 2) {
+        step3_ScanQR();
+      } else if (packingStep === 3) {
+        step4_PackIntoBox();
+      } else if (packingStep === 4) {
+        step5_TapeBox();
+      } else if (packingStep === 5) {
+        step6_BubbleWrap();
+      } else if (packingStep === 6) {
+        step7_ApplyLabel();
+      } else if (packingStep === 7) {
+        step8_DispatchHandover();
+      } else if (packingStep === 8) {
+        resetPackingProcess();
+      }
+    }
+
+    // BƯỚC 1: LẤY SẢN PHẨM (NHẶT ĐÚNG HÀNG THEO PHIẾU/ĐƠN TỪ BÀN ĐỂ SẢN PHẨM BÊN CẠNH)
+    function step1_PickProduct() {
+      highlightStepNode(1);
+      updateInstruction("Công nhân kiểm tra phiếu/đơn và lấy sản phẩm từ bàn để sản phẩm bên cạnh...", "bg-blue-500/20 text-blue-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Hai tay công nhân vươn tới sản phẩm trên bàn để sản phẩm
+      targetLHand.set(-1.46, TABLE_HEIGHT + 0.13, 0.10);
+      targetRHand.set(-1.24, TABLE_HEIGHT + 0.13, 0.10);
+
+      const startPos = productMesh.position.clone();
+      const targetPos = new THREE.Vector3(-1.35, TABLE_HEIGHT + 0.22, 0.10);
+      const startTime = performance.now();
+      const duration = 700;
+
+      function animLift(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        productMesh.position.lerpVectors(startPos, targetPos, ease);
+
+        if (p < 1) {
+          requestAnimationFrame(animLift);
+        } else {
+          playSoftThudSound();
+          packingStep = 1;
+          document.getElementById('step-badge').innerText = "Bước 1/8: Đã lấy từ bàn sản phẩm";
+          document.getElementById('btn-action-label').innerText = "2. Đi qua bàn đóng hàng";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Đã nhặt sản phẩm từ bàn chờ! Nhấn tiếp để công nhân đi qua bàn đóng hàng.", "bg-blue-500/20 text-blue-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextPackingStep, 800);
+          }
+        }
+      }
+      requestAnimationFrame(animLift);
+    }
+
+    // BƯỚC 2: ĐI QUA ĐỂ SẢN PHẨM LÊN BÀN ĐÓNG HÀNG
+    function step2_StageOnTable() {
+      highlightStepNode(2);
+      updateInstruction("Công nhân đang đi qua và chuyển sản phẩm lên bàn đóng hàng...", "bg-indigo-500/20 text-indigo-300");
+      document.getElementById('btn-action').disabled = true;
+
+      const startTime = performance.now();
+      const duration = 1200; // Thời gian bước đi qua bàn đóng hàng
+
+      function animWalk(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+
+        // Công nhân đi từ bàn chờ (X = -1.35) sang vị trí thao tác bên trái bàn đóng hàng (X = -0.25)
+        const workerX = THREE.MathUtils.lerp(-1.35, -0.25, ease);
+        workerGroup.position.x = workerX;
+
+        // Hoạt ảnh hai chân bước đi nhịp nhàng & độ nhấp nhô cơ thể
+        const stride = Math.sin(p * Math.PI * 6);
+        if (leftLegGroup && rightLegGroup) {
+          leftLegGroup.rotation.x = stride * 0.38;
+          rightLegGroup.rotation.x = -stride * 0.38;
+        }
+        workerGroup.position.y = Math.abs(stride) * 0.022;
+
+        // Hai tay ôm sản phẩm trước ngực di chuyển cùng người
+        targetLHand.set(workerX - 0.12, TABLE_HEIGHT + 0.22, 0.40);
+        targetRHand.set(workerX + 0.12, TABLE_HEIGHT + 0.22, 0.40);
+        productMesh.position.set(workerX, TABLE_HEIGHT + 0.20, 0.36);
+
+        if (p < 1) {
+          requestAnimationFrame(animWalk);
+        } else {
+          // Khi đến bàn đóng hàng: Dừng bước và đặt sản phẩm xuống ô tiếp nhận
+          if (leftLegGroup && rightLegGroup) {
+            leftLegGroup.rotation.x = 0;
+            rightLegGroup.rotation.x = 0;
+          }
+          workerGroup.position.set(-0.25, 0, 0.68);
+
+          // Đặt sản phẩm vào ô tiếp nhận ở góc trước bên trái (-0.50, +0.12)
+          // Cách xa nắp thùng carton (cách 10cm) và khay tem ở góc sau (cách 18cm)
+          const putPos = new THREE.Vector3(-0.50, TABLE_HEIGHT + 0.055, 0.12);
+          productMesh.position.copy(putPos);
+          targetLHand.set(-0.60, TABLE_HEIGHT + 0.10, 0.12);
+          targetRHand.set(-0.40, TABLE_HEIGHT + 0.10, 0.12);
+          playSoftThudSound();
+
+          packingStep = 2;
+          document.getElementById('step-badge').innerText = "Bước 2/8: Đã đưa lên bàn đóng hàng";
+          document.getElementById('btn-action-label').innerText = "3. Quét mã";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Sản phẩm đã đặt lên bàn đóng hàng! Nhấn tiếp để đưa mã vào Cam 2 quét.", "bg-indigo-500/20 text-indigo-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextPackingStep, 800);
+          }
+        }
+      }
+      requestAnimationFrame(animWalk);
+    }
+
+    // BƯỚC 3: QUÉT MÃ (ĐƯA MÃ VÀO MÁY QUÉT ĐỂ HỆ THỐNG XÁC NHẬN ĐƠN)
+    function step3_ScanQR() {
+      highlightStepNode(3);
+      updateInstruction("Đang đưa mã vận đơn vào vùng quét mã dưới Cam 2...", "bg-amber-500/20 text-amber-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Tay phải công nhân nhấc tem đặt vào vùng quét Cam 2
+      targetRHand.set(ZONE_X, TABLE_HEIGHT + 0.07, ZONE_Z);
+      targetLHand.set(-0.15, TABLE_HEIGHT + 0.08, 0.40);
+
+      const startPos = qrLabelMesh.position.clone();
+      const targetPos = new THREE.Vector3(ZONE_X, TABLE_HEIGHT + 0.003, ZONE_Z);
+      const startTime = performance.now();
+      const duration = 700;
+
+      function animSlide(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        qrLabelMesh.position.lerpVectors(startPos, targetPos, ease);
+        qrLabelMesh.position.y = (TABLE_HEIGHT + 0.003) + Math.sin(p * Math.PI) * 0.08;
+
+        if (p < 1) {
+          requestAnimationFrame(animSlide);
+        } else {
+          qrLabelMesh.position.copy(targetPos);
+          camLaserLine.visible = true;
+          const pipLaser = document.getElementById('pip2-laser-beam');
+          if (pipLaser) pipLaser.classList.remove('hidden');
+
+          document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-red-500/20 text-red-300 border border-red-500/50 font-bold animate-pulse";
+          document.getElementById('qr-scan-badge').innerText = "ĐANG QUÉT...";
+
+          setTimeout(() => {
+            playBeepSound();
+            if (pipLaser) pipLaser.classList.add('hidden');
+            document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold";
+            document.getElementById('qr-scan-badge').innerText = "QUÉT THÀNH CÔNG";
+            document.getElementById('barcode-display').classList.remove('hidden');
+            document.getElementById('barcode-display').innerText = "MÃ SPX: HN-20-10-TX05-N";
+            document.getElementById('qr-result-text').innerText = "HN-20-10-TX05-N";
+            camLaserLine.visible = false;
+
+            targetRHand.set(ZONE_X + 0.06, TABLE_HEIGHT + 0.09, ZONE_Z + 0.12);
+
+            packingStep = 3;
+            document.getElementById('step-badge').innerText = "Bước 3/8: Đã quét mã thành công";
+            document.getElementById('btn-action-label').innerText = "4. Đóng hàng vào hộp";
+            document.getElementById('btn-action').disabled = false;
+            updateInstruction("Hệ thống đã xác nhận đơn! Nhấn tiếp để xếp hàng vào thùng carton và gập nắp.", "bg-emerald-500/20 text-emerald-300");
+
+            if (isAutoRunning) {
+              setTimeout(runNextPackingStep, 900);
+            }
+          }, 650);
+        }
+      }
+      requestAnimationFrame(animSlide);
+    }
+
+    // BƯỚC 4: ĐÓNG HÀNG VÀO HỘP (XẾP SẢN PHẨM VÀO HỘP CARTON, CHÈN KÍN & GẬP NẮP)
+    function step4_PackIntoBox() {
+      highlightStepNode(4);
+      updateInstruction("Đang xếp sản phẩm vào hộp carton và gập kín các nắp hộp...", "bg-amber-500/20 text-amber-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Hai tay công nhân cầm sản phẩm xếp vào thùng
+      targetLHand.set(PACK_X - 0.10, TABLE_HEIGHT + 0.16, PACK_Z);
+      targetRHand.set(PACK_X + 0.06, TABLE_HEIGHT + 0.16, PACK_Z);
+
+      const startPos = productMesh.position.clone();
+      const targetPos = new THREE.Vector3(PACK_X, TABLE_HEIGHT + 0.055, PACK_Z);
+      const startTime = performance.now();
+      const duration = 500;
+
+      function animDrop(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        productMesh.position.lerpVectors(startPos, targetPos, ease);
+        productMesh.position.y = (TABLE_HEIGHT + 0.055) + Math.sin(p * Math.PI) * 0.15;
+
+        if (p < 1) {
+          requestAnimationFrame(animDrop);
+        } else {
+          productMesh.position.copy(targetPos);
+          playSoftThudSound();
+
+          // Gập 4 nắp hộp carton
+          const flapStart = performance.now();
+          const flapDur = 550;
+          function animFlaps(fNow) {
+            const fp = Math.min((fNow - flapStart) / flapDur, 1);
+            const fEase = 0.5 - Math.cos(fp * Math.PI) / 2;
+
+            boxFlaps.forEach(flap => {
+              const curRot = THREE.MathUtils.lerp(flap.openRot, flap.closeRot, fEase);
+              if (flap.axis === 'x') flap.pivot.rotation.x = curRot;
+              if (flap.axis === 'z') flap.pivot.rotation.z = curRot;
+            });
+
+            // Hai tay đè giữ nắp hộp
+            targetLHand.set(PACK_X - 0.08, TABLE_HEIGHT + 0.18, PACK_Z);
+            targetRHand.set(PACK_X + 0.08, TABLE_HEIGHT + 0.18, PACK_Z);
+
+            if (fp < 1) {
+              requestAnimationFrame(animFlaps);
+            } else {
+              packingStep = 4;
+              document.getElementById('step-badge').innerText = "Bước 4/8: Đã xếp hàng & gập nắp hộp";
+              document.getElementById('btn-action-label').innerText = "5. Dán niêm phong hộp";
+              document.getElementById('btn-action').disabled = false;
+              updateInstruction("Sản phẩm đã chèn kín trong hộp! Nhấn tiếp để dán niêm phong hộp bằng băng keo.", "bg-amber-500/20 text-amber-300");
+
+              if (isAutoRunning) {
+                setTimeout(runNextPackingStep, 850);
+              }
+            }
+          }
+          requestAnimationFrame(animFlaps);
+        }
+      }
+      requestAnimationFrame(animDrop);
+    }
+
+    // BƯỚC 5: DÁN NIÊM PHONG HỘP (DÁN KÍN CÁC NẮP HỘP BẰNG BĂNG KEO)
+    function step5_TapeBox() {
+      highlightStepNode(5);
+      updateInstruction("Đang dán kín các nắp hộp bằng băng keo niêm phong...", "bg-purple-500/20 text-purple-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Tay phải công nhân cầm dụng cụ dán băng dính cam
+      targetRHand.set(PACK_X + 0.15, TABLE_HEIGHT + 0.20, PACK_Z);
+      targetLHand.set(PACK_X - 0.12, TABLE_HEIGHT + 0.17, PACK_Z);
+
+      playTapeSound();
+      tapeStripMesh.visible = true;
+      tapeStripMesh.scale.x = 0.05;
+
+      const startTime = performance.now();
+      const duration = 650;
+
+      function animTape(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        tapeStripMesh.scale.x = p;
+
+        // Dụng cụ cắt băng dính lăn từ phải sang trái
+        if (tapeDispenserMesh) {
+          tapeDispenserMesh.position.x = THREE.MathUtils.lerp(PACK_X + 0.14, PACK_X - 0.14, p);
+          tapeDispenserMesh.position.y = TABLE_HEIGHT + 0.16 + 0.04;
+          tapeDispenserMesh.position.z = PACK_Z;
+          targetRHand.set(tapeDispenserMesh.position.x + 0.02, tapeDispenserMesh.position.y + 0.02, PACK_Z);
+        }
+
+        if (p < 1) {
+          requestAnimationFrame(animTape);
+        } else {
+          tapeStripMesh.scale.x = 1;
+          // Đặt lại dụng cụ dán về cạnh bàn
+          if (tapeDispenserMesh) {
+            tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.15);
+          }
+          targetRHand.set(0.25, TABLE_HEIGHT + 0.08, 0.42);
+          targetLHand.set(-0.25, TABLE_HEIGHT + 0.08, 0.42);
+
+          packingStep = 5;
+          document.getElementById('step-badge').innerText = "Bước 5/8: Đã dán niêm phong hộp";
+          document.getElementById('btn-action-label').innerText = "6. Bọc xốp nổ bên ngoài";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Hộp carton đã được niêm phong! Nhấn tiếp để bọc xốp nổ bên ngoài bảo vệ.", "bg-purple-500/20 text-purple-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextPackingStep, 850);
+          }
+        }
+      }
+      requestAnimationFrame(animTape);
+    }
+
+    // BƯỚC 6: BỌC XỐP NỔ BÊN NGOÀI (QUẤN PHỦ KÍN HỘP BẰNG XỐP NỔ, DÁN CHẶT CÁC MÉP)
+    function step6_BubbleWrap() {
+      highlightStepNode(6);
+      updateInstruction("Đang bọc phủ kín hộp carton bằng xốp nổ bóng khí và dán chặt các mép...", "bg-sky-500/20 text-sky-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Hai tay công nhân quấn lớp xốp nổ quanh hộp
+      targetLHand.set(PACK_X - 0.18, TABLE_HEIGHT + 0.10, PACK_Z);
+      targetRHand.set(PACK_X + 0.18, TABLE_HEIGHT + 0.10, PACK_Z);
+
+      bubbleWrapGroup.visible = true;
+      playBubbleWrapSound();
+
+      const startTime = performance.now();
+      const duration = 700;
+
+      function animWrap(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+
+        // Lớp xốp nổ siết ôm vừa khít hộp
+        const scale = THREE.MathUtils.lerp(1.22, 1.0, ease);
+        bubbleWrapMesh.scale.set(scale, scale, scale);
+
+        // Tay vuốt kín mép xốp nổ
+        targetLHand.set(PACK_X - 0.08, TABLE_HEIGHT + 0.16 + 0.035, PACK_Z);
+        targetRHand.set(PACK_X + 0.08, TABLE_HEIGHT + 0.16 + 0.035, PACK_Z);
+
+        if (p < 1) {
+          requestAnimationFrame(animWrap);
+        } else {
+          bubbleWrapMesh.scale.set(1, 1, 1);
+          bubbleTapeMesh.visible = true;
+
+          packingStep = 6;
+          document.getElementById('step-badge').innerText = "Bước 6/8: Đã bọc xốp nổ ngoài";
+          document.getElementById('btn-action-label').innerText = "7. Dán mã vận chuyển";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Kiện hàng đã được bọc kín xốp nổ! Nhấn tiếp để dán mã vận chuyển lên xốp.", "bg-sky-500/20 text-sky-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextPackingStep, 850);
+          }
+        }
+      }
+      requestAnimationFrame(animWrap);
+    }
+
+    // BƯỚC 7: DÁN MÃ VẬN CHUYỂN (DÁN TEM VẬN CHUYỂN PHẲNG PHIU LÊN LỚP XỐP NỔ NGOÀI CÙNG)
+    function step7_ApplyLabel() {
+      highlightStepNode(7);
+      updateInstruction("Đang nhấc tem vận chuyển SPX dán phẳng phiu lên lớp xốp nổ ngoài cùng...", "bg-emerald-500/20 text-emerald-300");
+      document.getElementById('btn-action').disabled = true;
+
+      // Tay phải công nhân với lấy tem từ vùng quét sang dán trên nóc lớp xốp
+      targetRHand.set(ZONE_X, TABLE_HEIGHT + 0.05, ZONE_Z);
+
+      const startPos = qrLabelMesh.position.clone();
+      const targetPos = new THREE.Vector3(PACK_X, TABLE_HEIGHT + 0.16 + 0.028, PACK_Z);
+      const startTime = performance.now();
+      const duration = 800;
+
+      function animMoveLabel(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+
+        qrLabelMesh.position.lerpVectors(startPos, targetPos, ease);
+        qrLabelMesh.position.y = (TABLE_HEIGHT + 0.05) + Math.sin(p * Math.PI) * 0.22;
+
+        // Tay phải theo sát tem dán xuống mặt xốp nổ
+        targetRHand.set(qrLabelMesh.position.x + 0.02, qrLabelMesh.position.y + 0.02, qrLabelMesh.position.z);
+        if (p > 0.5) {
+          targetLHand.set(PACK_X - 0.06, TABLE_HEIGHT + 0.16 + 0.035, PACK_Z);
+        }
+
+        if (p < 1) {
+          requestAnimationFrame(animMoveLabel);
+        } else {
+          qrLabelMesh.position.copy(targetPos);
+          playSuccessChime();
+
+          document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold";
+          document.getElementById('qr-scan-badge').innerText = "ĐÃ DÁN LÊN XỐP NỔ";
+          document.getElementById('qr-result-text').innerText = "CHỜ BÀN GIAO";
+
+          packingStep = 7;
+          document.getElementById('step-badge').innerText = "Bước 7/8: Đã dán tem vận chuyển";
+          document.getElementById('btn-action-label').innerText = "8. Bàn giao";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Tem vận chuyển đã dán phẳng phiu trên lớp xốp nổ! Nhấn tiếp để bàn giao kiện.", "bg-emerald-500/20 text-emerald-200");
+
+          if (isAutoRunning) {
+            setTimeout(runNextPackingStep, 950);
+          }
+        }
+      }
+      requestAnimationFrame(animMoveLabel);
+    }
+
+    // BƯỚC 8: BÀN GIAO (CHUYỂN SANG KHU VỰC CHỜ LẤY HÀNG)
+    function step8_DispatchHandover() {
+      highlightStepNode(8);
+      updateInstruction("Đang bàn giao kiện hàng sang khu vực chờ lấy hàng...", "bg-slate-800 text-slate-200");
+      document.getElementById('btn-action').disabled = true;
+
+      // Hai tay công nhân bắt đầu đẩy kiện hàng sang bàn bàn giao bên phải
+      const startBoxX = boxGroup.position.x;
+      const startQrX = qrLabelMesh.position.x;
+      const targetBoxX = 1.25; // Tâm bàn đựng hàng sau đóng gói bên phải (tọa độ X = 1.25, cao độ bằng mặt bàn)
+      const targetQrX = 1.25;
+      const startTime = performance.now();
+      const duration = 850;
+
+      function animExit(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        boxGroup.position.x = THREE.MathUtils.lerp(startBoxX, targetBoxX, ease);
+        boxGroup.position.y = TABLE_HEIGHT;
+        qrLabelMesh.position.x = THREE.MathUtils.lerp(startQrX, targetQrX, ease);
+
+        // Hai tay công nhân di chuyển theo để đẩy kiện hàng sang bàn bên phải
+        const pushProgress = Math.min(p * 1.5, 1);
+        const handX = THREE.MathUtils.lerp(PACK_X + 0.15, 0.45, pushProgress);
+        targetLHand.set(handX - 0.12, TABLE_HEIGHT + 0.14, PACK_Z);
+        targetRHand.set(handX + 0.12, TABLE_HEIGHT + 0.14, PACK_Z);
+
+        if (p < 1) {
+          requestAnimationFrame(animExit);
+        } else {
+          boxGroup.position.set(targetBoxX, TABLE_HEIGHT, PACK_Z);
+          qrLabelMesh.position.set(targetQrX, TABLE_HEIGHT + 0.16 + 0.028, PACK_Z);
+          playSoftThudSound();
+          targetLHand.set(-0.15, TABLE_HEIGHT + 0.08, 0.42);
+          targetRHand.set(0.15, TABLE_HEIGHT + 0.08, 0.42);
+
+          packingStep = 8;
+          document.getElementById('step-badge').innerText = "Bước 8/8: Đã chuyển sang bàn bàn giao";
+          document.getElementById('step-badge').className = "px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold";
+          document.getElementById('btn-action-label').innerText = "Đơn mới (Reset)";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("🎉 Đã bàn giao kiện hàng sang bàn chờ lấy hàng thành công! Nhấn \"Đơn mới\" để đóng gói đơn tiếp theo.", "bg-emerald-500/30 text-emerald-200 font-bold");
+
+          if (isAutoRunning) {
+            setTimeout(resetPackingProcess, 1500);
+          }
+        }
+      }
+      requestAnimationFrame(animExit);
+    }
+
+    function autoRunSimulation() {
+      if (isAutoRunning) return;
+      isAutoRunning = true;
+      document.getElementById('btn-auto').classList.add('bg-blue-600', 'text-white');
+      document.getElementById('btn-auto').innerText = "Đang chạy Auto...";
+      runNextPackingStep();
+    }
+
+    function resetPackingProcess() {
+      isAutoRunning = false;
+      packingStep = 0;
+      document.getElementById('btn-auto').classList.remove('bg-blue-600', 'text-white');
+      document.getElementById('btn-auto').innerText = "Tự động chạy (Auto)";
+
+      // Đặt lại các đối tượng về trạng thái ban đầu
+      const prodH = 0.11;
+      productMesh.position.set(-1.35, TABLE_HEIGHT + prodH / 2, 0.10);
+      productMesh.visible = true;
+
+      boxGroup.position.set(PACK_X, TABLE_HEIGHT, PACK_Z);
+      tapeStripMesh.visible = false;
+      tapeStripMesh.scale.x = 1;
+
+      if (bubbleWrapGroup) {
+        bubbleWrapGroup.visible = false;
+        bubbleWrapMesh.scale.set(1, 1, 1);
+      }
+
+      boxFlaps.forEach(flap => {
+        if (flap.axis === 'x') flap.pivot.rotation.x = flap.openRot;
+        if (flap.axis === 'z') flap.pivot.rotation.z = flap.openRot;
+      });
+
+      qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
+      camLaserLine.visible = false;
+
+      if (tapeDispenserMesh) {
+        tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
+      }
+
+      // Đặt lại công nhân về đứng trước bàn để sản phẩm bên cạnh
+      workerGroup.position.set(-1.35, 0, 0.68);
+      if (leftLegGroup) leftLegGroup.rotation.x = 0;
+      if (rightLegGroup) rightLegGroup.rotation.x = 0;
+
+      // Vị trí nghỉ của hai tay công nhân tại bàn sản phẩm
+      targetLHand.set(-1.46, TABLE_HEIGHT + 0.08, 0.35);
+      targetRHand.set(-1.24, TABLE_HEIGHT + 0.08, 0.35);
+
+      const pipLaser = document.getElementById('pip2-laser-beam');
+      if (pipLaser) pipLaser.classList.add('hidden');
+
+      document.getElementById('step-badge').innerText = "Bước 0/8: Chờ bắt đầu";
+      document.getElementById('step-badge').className = "px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold";
+      document.getElementById('btn-action-label').innerText = "1. Lấy sản phẩm";
+      document.getElementById('btn-action').disabled = false;
+      document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold";
+      document.getElementById('qr-scan-badge').innerText = "ĐANG CHỜ MÃ";
+      document.getElementById('qr-result-text').innerText = "VÙNG SCAN CHUẨN";
+      document.getElementById('barcode-display').classList.add('hidden');
+
+      highlightStepNode(0);
+      updateInstruction("Nhấn <strong>\"1. Lấy sản phẩm\"</strong> để công nhân nhặt hàng từ bàn để sản phẩm bên cạnh.", "text-slate-300");
+    }
+
+    function highlightStepNode(step) {
+      for (let i = 1; i <= 8; i++) {
+        const el = document.getElementById('step-node-' + i);
+        if (!el) continue;
+        if (i === step) {
+          el.className = "p-1.5 rounded-xl bg-blue-600/30 border border-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all scale-102";
+        } else if (i < step) {
+          el.className = "p-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition-all";
+        } else {
+          el.className = "p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all";
+        }
+      }
+    }
+
+    function updateInstruction(html, badgeClass) {
+      document.getElementById('instruction-msg').innerHTML = `<span class="text-amber-400 font-bold">💡</span><span>${html}</span>`;
+    }
+
+    function toggleFOVCones() {
+      showFovCones = !showFovCones;
+      fovGroup.visible = showFovCones;
+      document.getElementById('fov-status').innerText = showFovCones ? "BẬT" : "TẮT";
+      document.getElementById('fov-status').className = showFovCones ? "text-blue-400" : "text-slate-500";
+    }
+
+    function setCameraView(view) {
+      highlightBtn('btn-' + view);
+      let targetPos = new THREE.Vector3();
+      let targetLook = new THREE.Vector3(-0.35, 0.85, 0);
+
+      switch(view) {
+        case 'front': targetPos.set(-0.35, 1.0, 3.4); break;
+        case 'side': targetPos.set(3.4, 0.95, 0); targetLook.set(-0.2, 0.85, 0); break;
+        case 'top': targetPos.set(-0.35, 4.2, 0.001); targetLook.set(-0.35, 0, 0); break;
+        case 'iso':
+        default: targetPos.set(2.4, 2.2, 2.6); break;
+      }
+
+      const startPos = camera.position.clone();
+      const startLook = controls.target.clone();
+      const startTime = performance.now();
+      const duration = 750;
+
+      function tween(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        camera.position.lerpVectors(startPos, targetPos, ease);
+        controls.target.lerpVectors(startLook, targetLook, ease);
+        controls.update();
+        if (p < 1) requestAnimationFrame(tween);
+      }
+      requestAnimationFrame(tween);
+    }
+
+    function highlightBtn(btnId) {
+      ['btn-iso', 'btn-front', 'btn-side', 'btn-top'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+          b.classList.remove('bg-blue-600', 'text-white');
+          b.classList.add('bg-slate-800', 'text-slate-300');
+        }
+      });
+      const active = document.getElementById(btnId);
+      if (active) {
+        active.classList.remove('bg-slate-800', 'text-slate-300');
+        active.classList.add('bg-blue-600', 'text-white');
+      }
+    }
+
+    // ĐỒNG HỒ OSD CHUẨN ĐẦU GHI HIKVISION (Y HỆT ẢNH MẪU: 09-25-2026 Fri 15:06:19)
+    function updateCCTVClocks() {
+      const now = new Date();
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayStr = days[now.getDay()];
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      
+      const osdStr = `${mm}-${dd}-${yyyy} ${dayStr} ${hh}:${min}:${ss}`;
+      const osdEl = document.getElementById('cctv-osd-time');
+      if (osdEl) osdEl.innerText = osdStr;
+
+      const timerEl = document.getElementById('cctv-timer');
+      if (timerEl) timerEl.innerText = `${min}:${ss} / LIVE`;
+    }
+
+    // ĐIỀU KHIỂN THU PHÓNG KHUNG PiP QR Ở GÓC PHẢI
+    let pipExpanded = false;
+    function togglePipExpand() {
+      const pip = document.getElementById('pip-cam2-container');
+      const btn = document.getElementById('btn-toggle-pip');
+      if (!pip) return;
+      pipExpanded = !pipExpanded;
+      if (pipExpanded) {
+        pip.classList.remove('w-[130px]', 'sm:w-[155px]', 'md:w-[170px]');
+        pip.classList.add('w-[210px]', 'sm:w-[240px]', 'md:w-[260px]');
+        if (btn) btn.innerHTML = '<span>Thu nhỏ QR</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+      } else {
+        pip.classList.remove('w-[210px]', 'sm:w-[240px]', 'md:w-[260px]');
+        pip.classList.add('w-[130px]', 'sm:w-[155px]', 'md:w-[170px]');
+        if (btn) btn.innerHTML = '<span>Góc phải QR</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5m-11 7v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>';
+      }
+      setTimeout(onWindowResize, 60);
+    }
+
+    let isVideoPlaying = true;
+    function toggleVideoPlayback() {
+      isVideoPlaying = !isVideoPlaying;
+      const icon = document.getElementById('play-pause-icon');
+      if (icon) {
+        icon.innerText = isVideoPlaying ? '▶' : '❚❚';
+      }
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      const pixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+
+      const pip1 = document.getElementById('pip-canvas-cam1');
+      const pip2 = document.getElementById('pip-canvas-cam2');
+      if (pip1 && pipRenderer1) {
+        const r1 = pip1.getBoundingClientRect();
+        const w1 = Math.round(r1.width) || 480;
+        const h1 = Math.round(r1.height) || 280;
+        pipRenderer1.setPixelRatio(pixelRatio);
+        pipRenderer1.setSize(w1, h1, false);
+        pipCam1.aspect = w1 / h1;
+        updatePipCam1Fov();
+      }
+      if (pip2 && pipRenderer2) {
+        const r2 = pip2.getBoundingClientRect();
+        const w2 = Math.round(r2.width) || 160;
+        const h2 = Math.round(r2.height) || 220;
+        pipRenderer2.setPixelRatio(pixelRatio);
+        pipRenderer2.setSize(w2, h2, false);
+        pipCam2.aspect = w2 / h2;
+        pipCam2.updateProjectionMatrix();
+      }
+    }
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const elapsed = clock.getElapsedTime();
+
+      // Hiệu ứng tia laser quét lên xuống khi đang scan
+      if (camLaserLine && camLaserLine.visible) {
+        camLaserLine.position.z = ZONE_Z + Math.sin(elapsed * 12) * 0.045;
+      }
+
+      // Cập nhật hoạt ảnh tay người thao tác
+      if (showWorker) {
+        updateWorkerArms();
+      }
+
+      controls.update();
+
+      // 1. Render màn hình chính
+      renderer.render(scene, camera);
+
+      // 2. Render màn hình PiP CCTV 1 (Toàn cảnh)
+      if (pipRenderer1 && pipCam1) {
+        // Tắt tạm thời tia nón khi nhìn từ chính camera đó để màn hình quan sát thật như camera an ninh
+        const fovState = fovGroup.visible;
+        fovGroup.visible = false;
+        pipRenderer1.render(scene, pipCam1);
+        fovGroup.visible = fovState;
+      }
+
+      // 3. Render màn hình PiP CCTV 2 (Quét mã)
+      if (pipRenderer2 && pipCam2) {
+        const fovState = fovGroup.visible;
+        fovGroup.visible = false;
+        pipRenderer2.render(scene, pipCam2);
+        fovGroup.visible = fovState;
+      }
+    }
+
+    window.onload = function() {
+      init();
+    };
+  </script>
+</body>
+</html>
