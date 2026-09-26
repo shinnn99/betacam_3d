@@ -47,86 +47,92 @@
   <div id="canvas-container" class="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing z-0"></div>
 
   <!-- Header thông tin dự án -->
-  <header class="absolute top-3 left-4 z-20 pointer-events-none">
-    <div class="glass-panel px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-auto">
-      <div class="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <!-- Header thông tin dự án (Responsive) -->
+  <header class="absolute top-2 left-2 sm:top-3 sm:left-4 z-20 pointer-events-none">
+    <div class="glass-panel px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-xl flex items-center gap-2 sm:gap-3 pointer-events-auto max-w-[calc(100vw-120px)] sm:max-w-none">
+      <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
       </div>
-      <div>
-        <h1 class="text-xs md:text-sm font-bold tracking-tight text-white flex items-center gap-2">
-          BÀN ĐÓNG HÀNG & HỆ THỐNG 2 CAMERA
-          <span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider font-mono-code font-bold">MÔ PHỎNG LIVE</span>
+      <div class="min-w-0">
+        <h1 class="text-[11px] sm:text-xs md:text-sm font-bold tracking-tight text-white flex items-center gap-1.5 truncate">
+          <span class="truncate">BÀN ĐÓNG HÀNG & 2 CAM</span>
+          <span class="hidden xs:inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase font-mono-code font-bold shrink-0">LIVE</span>
         </h1>
-        <p class="text-[11px] text-slate-400 font-mono-code">Kích thước chuẩn: 1500 x 1000 x 1800 mm</p>
+        <p class="hidden sm:block text-[10px] md:text-[11px] text-slate-400 font-mono-code truncate">Kích thước chuẩn: 1500 x 1000 x 1800 mm</p>
       </div>
     </div>
   </header>
 
-  <!-- KHUNG XEM HỢP NHẤT 2 CAMERA (PICTURE-IN-PICTURE NVR MONITOR) -->
-  <aside class="absolute top-3 right-4 z-20 flex flex-col gap-2.5 w-80 sm:w-96 md:w-[460px] lg:w-[500px] pointer-events-auto">
+  <!-- KHUNG XEM HỢP NHẤT 2 CAMERA (PICTURE-IN-PICTURE NVR MONITOR - RESPONSIVE) -->
+  <aside class="absolute top-12 left-2 right-2 sm:left-auto sm:top-3 sm:right-4 z-20 flex flex-col gap-1.5 sm:gap-2.5 w-auto sm:w-96 md:w-[460px] lg:w-[500px] pointer-events-auto">
     <!-- Hộp điều khiển góc nhìn nhanh bản vẽ kỹ thuật -->
-    <div class="glass-panel p-1.5 rounded-2xl shadow-xl flex items-center justify-between text-xs">
-      <span class="text-[11px] text-slate-400 font-mono-code pl-2">Góc bản vẽ:</span>
+    <div class="glass-panel p-1 sm:p-1.5 rounded-xl sm:rounded-2xl shadow-xl flex items-center justify-between text-xs">
+      <span class="text-[10px] sm:text-[11px] text-slate-400 font-mono-code pl-1.5 sm:pl-2">Góc nhìn:</span>
       <div class="flex gap-1">
-        <button onclick="setCameraView('iso')" id="btn-iso" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-blue-600 text-white shadow transition">ISO</button>
-        <button onclick="setCameraView('front')" id="btn-front" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Đứng</button>
-        <button onclick="setCameraView('side')" id="btn-side" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bên</button>
-        <button onclick="setCameraView('top')" id="btn-top" class="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bằng</button>
+        <button onclick="setCameraView('iso')" id="btn-iso" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-medium rounded-lg bg-blue-600 text-white shadow transition">ISO</button>
+        <button onclick="setCameraView('front')" id="btn-front" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Đứng</button>
+        <button onclick="setCameraView('side')" id="btn-side" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bên</button>
+        <button onclick="setCameraView('top')" id="btn-top" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Bằng</button>
       </div>
     </div>
 
     <!-- MÀN HÌNH CCTV HỢP NHẤT: KHUNG TO CAM 01 + PIP CAM 02 QUÉT QR Ở GÓC PHẢI -->
-    <div class="glass-panel p-2.5 rounded-2xl shadow-2xl border border-sky-500/40 relative">
+    <div class="glass-panel p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-2xl border border-sky-500/40 relative">
       <!-- Header của khung CCTV Hợp nhất -->
-      <div class="flex items-center justify-between pb-1.5 px-1 border-b border-slate-700/60 mb-2">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-          <span class="text-xs font-bold font-mono-code text-white uppercase tracking-wide">GIÁM SÁT ĐÓNG HÀNG (2-IN-1 VIEW)</span>
-          <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono-code font-semibold">DUAL LIVE</span>
+      <div class="flex items-center justify-between pb-1.5 px-0.5 sm:px-1 border-b border-slate-700/60 mb-1.5 sm:mb-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></span>
+          <span id="cctv-main-title" class="text-[11px] sm:text-xs font-bold font-mono-code text-white uppercase tracking-wide truncate">GIÁM SÁT ĐÓNG HÀNG</span>
+          <span id="cctv-mode-badge" class="hidden xs:inline-block text-[8px] sm:text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono-code font-semibold shrink-0">2-IN-1</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="togglePipExpand()" id="btn-toggle-pip" class="text-[10px] font-mono-code px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 transition flex items-center gap-1" title="Phóng to / Thu nhỏ khung QR">
-            <span>Góc phải QR</span>
+        <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+          <button onclick="togglePipExpand()" id="btn-toggle-pip" class="text-[9px] sm:text-[10px] font-mono-code px-1.5 py-0.5 sm:px-2 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 transition flex items-center gap-1" title="Phóng to / Thu nhỏ khung QR">
+            <span class="hidden sm:inline">Góc phải QR</span>
+            <span class="sm:hidden">Cam 2</span>
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5m-11 7v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+          </button>
+          <button onclick="toggleCctvCollapse()" id="btn-toggle-cctv" class="text-[9px] sm:text-[10px] font-mono-code px-1.5 py-0.5 sm:px-2 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/30 transition flex items-center gap-1" title="Thu gọn / Mở rộng màn hình CCTV">
+            <span id="cctv-collapse-label">Thu gọn</span>
+            <span id="cctv-collapse-icon">▾</span>
           </button>
         </div>
       </div>
 
       <!-- Màn hình CCTV chính (Toàn cảnh Cam 1) + PiP Cam 2 ở góc phải -->
-      <div class="cctv-screen rounded-xl relative w-full h-[230px] sm:h-[260px] md:h-[290px] border border-sky-500/30 shadow-inner overflow-hidden bg-black select-none">
+      <div id="cctv-screen-box" class="cctv-screen rounded-xl relative w-full h-[220px] sm:h-[260px] md:h-[290px] border border-sky-500/30 shadow-inner overflow-hidden bg-black select-none transition-all duration-300">
         
         <!-- Canvas Cam 1: Toàn cảnh bàn đóng hàng -->
         <canvas id="pip-canvas-cam1" class="w-full h-full block object-cover"></canvas>
 
         <!-- OSD Cam 1 (Góc trên bên trái) - Chuẩn CCTV Camera như trong ảnh thực tế -->
-        <div class="absolute top-2 left-2.5 pointer-events-none z-10 flex flex-col gap-0.5 text-left">
-          <div id="cctv-osd-time" class="text-[11px] md:text-xs font-mono-code font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-wide">
+        <div class="absolute top-1.5 left-2 sm:top-2 sm:left-2.5 pointer-events-none z-10 flex flex-col gap-0.5 text-left">
+          <div id="cctv-osd-time" class="text-[10px] sm:text-[11px] md:text-xs font-mono-code font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-wide">
             09-25-2026 Fri 15:06:19
           </div>
-          <div class="flex items-center gap-1.5 text-[9px] font-mono-code">
-            <span class="text-red-400 font-bold drop-shadow">● REC 1080P</span>
-            <span class="text-slate-300 bg-black/60 px-1 rounded">CH-01: TOÀN CẢNH</span>
+          <div class="flex items-center gap-1 text-[8px] sm:text-[9px] font-mono-code">
+            <span class="text-red-400 font-bold drop-shadow">● REC</span>
+            <span class="text-slate-300 bg-black/60 px-1 rounded">CH-01</span>
           </div>
         </div>
 
         <!-- OSD Cam 1 (Góc dưới bên trái) - Thông số kỹ thuật & mã camera như trong ảnh thực tế -->
-        <div class="absolute bottom-8 left-2.5 pointer-events-none z-10 flex flex-col text-[9px] font-mono-code text-slate-300 drop-shadow">
+        <div class="absolute bottom-8 left-2 sm:left-2.5 pointer-events-none z-10 hidden sm:flex flex-col text-[8px] md:text-[9px] font-mono-code text-slate-300 drop-shadow">
           <span class="font-bold text-sky-300/90 tracking-wide">DS-2CD2043G2-LI2UHU(D)</span>
-          <span class="text-[8px] text-slate-400">KHUNG QUAY MẶT BÀN 1500x1000mm - CAO 1000mm</span>
+          <span class="text-[8px] text-slate-400">KHUNG QUAY MẶT BÀN 1500x1000mm</span>
         </div>
 
-        <!-- KHUNG PiP: CAM 02 QUÉT MÃ QR NẰM GÓC PHẢI KHUNG VIEW (Y HỆT ẢNH MẪU THỰC TẾ) -->
-        <div id="pip-cam2-container" class="absolute top-2 right-2 bottom-8 w-[130px] sm:w-[155px] md:w-[170px] z-20 flex flex-col bg-slate-950/95 border-2 border-emerald-500/90 rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 group">
+        <!-- KHUNG PiP: CAM 02 QUÉT MÃ QR NẰM GÓC PHẢI KHUNG VIEW -->
+        <div id="pip-cam2-container" class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bottom-8 w-[105px] xs:w-[125px] sm:w-[145px] md:w-[165px] z-20 flex flex-col bg-slate-950/95 border-2 border-emerald-500/90 rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 group">
           
           <!-- Thanh tiêu đề của PiP Cam 2 -->
-          <div class="px-2 py-1 bg-slate-900/90 border-b border-emerald-500/30 flex items-center justify-between text-[9px] font-mono-code shrink-0">
+          <div class="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-slate-900/90 border-b border-emerald-500/30 flex items-center justify-between text-[8px] sm:text-[9px] font-mono-code shrink-0">
             <div class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="font-bold text-emerald-300 tracking-wider">CAM 02 [QR]</span>
+              <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="font-bold text-emerald-300 tracking-wider">CAM 02</span>
             </div>
-            <span id="qr-scan-badge" class="px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold whitespace-nowrap">ĐANG CHỜ MÃ</span>
+            <span id="qr-scan-badge" class="px-1 py-0.2 rounded text-[7px] sm:text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold whitespace-nowrap">CHỜ MÃ</span>
           </div>
 
           <!-- Khu vực Canvas Cam 2 quét tem A6 cận cảnh -->
@@ -134,43 +140,43 @@
             <canvas id="pip-canvas-cam2" class="w-full h-full block object-cover"></canvas>
             
             <!-- Khung căn chỉnh quét mã & tia quét động -->
-            <div class="absolute inset-1.5 border border-dashed border-emerald-400/40 rounded pointer-events-none flex flex-col justify-between p-1 z-10">
-              <div class="flex justify-between items-center text-[7px] text-emerald-400/70 font-mono-code">
-                <span>┌ SCANNER</span>
+            <div class="absolute inset-1 sm:inset-1.5 border border-dashed border-emerald-400/40 rounded pointer-events-none flex flex-col justify-between p-0.5 sm:p-1 z-10">
+              <div class="flex justify-between items-center text-[6px] sm:text-[7px] text-emerald-400/70 font-mono-code">
+                <span>┌ SCAN</span>
                 <span>SPX ┐</span>
               </div>
               
               <!-- Tia quét Laser khi đang scan -->
               <div id="pip2-laser-beam" class="hidden w-full h-0.5 bg-gradient-to-r from-red-500 via-rose-300 to-red-500 shadow-[0_0_10px_#ef4444] animate-pulse"></div>
 
-              <div class="flex justify-between items-center text-[7px] text-emerald-400/70 font-mono-code">
-                <span>└ H: 620mm</span>
+              <div class="flex justify-between items-center text-[6px] sm:text-[7px] text-emerald-400/70 font-mono-code">
+                <span>└ H:620</span>
                 <span>VÙNG ĐỌC ┘</span>
               </div>
             </div>
           </div>
 
           <!-- Thanh trạng thái kết quả của PiP Cam 2 -->
-          <div class="px-1.5 py-1 bg-slate-900/95 border-t border-slate-800 text-[8px] font-mono-code flex items-center justify-between text-slate-300 shrink-0">
+          <div class="px-1 py-0.5 sm:px-1.5 sm:py-1 bg-slate-900/95 border-t border-slate-800 text-[7px] sm:text-[8px] font-mono-code flex items-center justify-between text-slate-300 shrink-0">
             <span class="text-slate-400">MÃ:</span>
-            <span id="qr-result-text" class="text-emerald-300 font-bold truncate max-w-[105px]">VÙNG SCAN CHUẨN</span>
+            <span id="qr-result-text" class="text-emerald-300 font-bold truncate max-w-[80px] sm:max-w-[105px]">VÙNG SCAN</span>
           </div>
         </div>
 
-        <!-- Thanh player bar mô phỏng đầu ghi NVR dưới đáy (Giống ảnh mẫu có thanh phát video) -->
-        <div class="absolute bottom-0 left-0 right-0 h-7 bg-black/85 backdrop-blur-sm border-t border-slate-800/80 px-2.5 flex items-center justify-between text-[10px] font-mono-code z-10 text-slate-300">
-          <div class="flex items-center gap-2">
+        <!-- Thanh player bar mô phỏng đầu ghi NVR dưới đáy -->
+        <div class="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm border-t border-slate-800/80 px-2 sm:px-2.5 flex items-center justify-between text-[9px] sm:text-[10px] font-mono-code z-10 text-slate-300">
+          <div class="flex items-center gap-1.5 sm:gap-2">
             <button onclick="toggleVideoPlayback()" class="text-white hover:text-sky-400 transition" title="Tạm dừng/Tiếp tục">
               <span id="play-pause-icon">▶</span>
             </button>
-            <span id="cctv-timer" class="text-slate-400 text-[9px]">0:00 / LIVE</span>
+            <span id="cctv-timer" class="text-slate-400 text-[8px] sm:text-[9px]">0:00 / LIVE</span>
           </div>
           <div class="hidden sm:block text-[8px] text-slate-500 tracking-wider">
-            CH1 (MAIN 1080P) + CH2 (PiP RIGHT)
+            CH1 (1080P) + CH2 (PiP)
           </div>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span class="text-[8px] text-emerald-400 font-bold">SYNCHRONIZED</span>
+            <span class="text-[7px] sm:text-[8px] text-emerald-400 font-bold">SYNC</span>
           </div>
         </div>
 
@@ -178,90 +184,104 @@
     </div>
   </aside>
 
-  <!-- BẢNG ĐIỀU KHIỂN QUY TRÌNH ĐÓNG HÀNG THỰC TẾ 8 BƯỚC (BỌC XỐP NGOÀI HỘP) -->
-  <div class="absolute bottom-4 left-4 right-4 md:right-auto md:w-[680px] z-20 glass-panel p-3.5 rounded-3xl shadow-2xl space-y-2.5">
-    <!-- Tiêu đề và trạng thái quy trình -->
-    <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
-      <div class="flex items-center gap-2">
-        <span class="flex h-3 w-3 relative">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-        </span>
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-200">QUY TRÌNH ĐÓNG HÀNG BỌC XỐP NGOÀI HỘP (8 BƯỚC THỰC TẾ)</span>
+  <!-- BẢNG ĐIỀU KHIỂN QUY TRÌNH (THIẾT KẾ RESPONSIVE GỌN GÀNG) -->
+  <div class="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 md:right-auto md:w-[600px] z-20 glass-panel p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-2xl space-y-1.5 sm:space-y-2">
+    
+    <!-- Hàng 1: Tab chuyển đổi Quy trình & Trạng thái tiến trình -->
+    <div class="flex items-center justify-between gap-1.5 sm:gap-2">
+      <!-- Tab chuyển đổi Đóng hàng / Khui hoàn -->
+      <div class="flex items-center p-0.5 bg-slate-900/90 rounded-xl border border-slate-700/70">
+        <button id="tab-mode-pack" onclick="switchWorkflowMode('pack')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25">
+          <span>📦</span>
+          <span>Đóng hàng</span>
+        </button>
+        <button id="tab-mode-return" onclick="switchWorkflowMode('return')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
+          <span>🔄</span>
+          <span>Khui hoàn</span>
+        </button>
       </div>
-      <div class="text-[11px] font-mono-code text-slate-400 flex items-center gap-2">
-        <span>Tiến trình:</span>
-        <span id="step-badge" class="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">Bước 0/8: Chờ bắt đầu</span>
+
+      <span id="workflow-title" class="hidden">QUY TRÌNH ĐÓNG HÀNG BỌC XỐP NGOÀI HỘP (8 BƯỚC THỰC TẾ)</span>
+
+      <!-- Tiến trình & Nút Bật/Tắt xem 8 bước -->
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <span id="step-badge" class="px-1.5 py-0.5 sm:px-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]">Bước 0/8: Chờ</span>
+        <button onclick="toggleStepperDetail()" id="btn-toggle-detail" class="py-0.5 px-1.5 sm:py-1 sm:px-2 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition flex items-center gap-1" title="Thu gọn / Mở rộng chi tiết 8 bước">
+          <span id="toggle-detail-icon">▾</span>
+          <span id="toggle-detail-text">8 bước</span>
+        </button>
       </div>
     </div>
 
-    <!-- 8 Bước trực quan (Stepper 4 cột x 2 hàng) -->
-    <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
-      <div id="step-node-1" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">1. Lấy sản phẩm</div>
-        <div class="text-[9px] text-slate-500 truncate">Bàn để hàng</div>
-      </div>
-      <div id="step-node-2" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">2. Đi qua bàn gói</div>
-        <div class="text-[9px] text-slate-500 truncate">Đặt lên bàn</div>
-      </div>
-      <div id="step-node-3" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">3. Quét mã</div>
-        <div class="text-[9px] text-slate-500 truncate">Cam 2 nhận diện</div>
-      </div>
-      <div id="step-node-4" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">4. Vào hộp</div>
-        <div class="text-[9px] text-slate-500 truncate">Xếp & gập nắp</div>
-      </div>
-      <div id="step-node-5" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">5. Niêm phong</div>
-        <div class="text-[9px] text-slate-500 truncate">Dán băng dính hộp</div>
-      </div>
-      <div id="step-node-6" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">6. Bọc xốp nổ</div>
-        <div class="text-[9px] text-slate-500 truncate">Quấn kín bóng khí</div>
-      </div>
-      <div id="step-node-7" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">7. Dán tem SPX</div>
-        <div class="text-[9px] text-slate-500 truncate">Dán lên lớp xốp</div>
-      </div>
-      <div id="step-node-8" class="p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all">
-        <div class="font-bold text-[10px] mb-0.5">8. Bàn giao</div>
-        <div class="text-[9px] text-slate-500 truncate">Chờ lấy hàng</div>
+    <!-- Hàng 2: 8 Bước trực quan (4 cột trên mobile, 8 cột trên tablet/desktop) -->
+    <div id="stepper-container" class="transition-all duration-300 overflow-hidden">
+      <div class="grid grid-cols-4 sm:grid-cols-8 gap-1 text-center text-xs">
+        <div id="step-node-1" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">1. Lấy hàng</div>
+          <div class="text-[8px] text-slate-500 truncate">Bàn chờ</div>
+        </div>
+        <div id="step-node-2" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">2. Đi qua bàn</div>
+          <div class="text-[8px] text-slate-500 truncate">Đặt lên bàn</div>
+        </div>
+        <div id="step-node-3" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">3. Quét mã</div>
+          <div class="text-[8px] text-slate-500 truncate">Cam 2 scan</div>
+        </div>
+        <div id="step-node-4" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">4. Vào hộp</div>
+          <div class="text-[8px] text-slate-500 truncate">Gập 4 nắp</div>
+        </div>
+        <div id="step-node-5" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">5. Niêm phong</div>
+          <div class="text-[8px] text-slate-500 truncate">Dán băng keo</div>
+        </div>
+        <div id="step-node-6" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">6. Bọc xốp</div>
+          <div class="text-[8px] text-slate-500 truncate">Bóng khí</div>
+        </div>
+        <div id="step-node-7" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">7. Dán tem</div>
+          <div class="text-[8px] text-slate-500 truncate">Tem SPX</div>
+        </div>
+        <div id="step-node-8" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[9px] truncate">8. Bàn giao</div>
+          <div class="text-[8px] text-slate-500 truncate">Chờ lấy</div>
+        </div>
       </div>
     </div>
 
-    <!-- Thông báo hướng dẫn thời gian thực -->
-    <div class="p-2 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
-      <p id="instruction-msg" class="text-slate-300 flex items-center gap-2">
-        <span class="text-amber-400 font-bold text-sm">💡</span>
-        <span>Nhấn <strong>"1. Lấy sản phẩm"</strong> để công nhân nhặt hàng từ bàn để sản phẩm bên cạnh.</span>
+    <!-- Hàng 3: Hướng dẫn & mã barcode (Đơn dòng tinh gọn) -->
+    <div class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 min-h-[24px] sm:min-h-[28px]">
+      <p id="instruction-msg" class="flex items-center gap-1.5 truncate">
+        <span class="text-amber-400 font-bold text-xs">💡</span>
+        <span class="truncate">Nhấn <strong>"1. Lấy sản phẩm"</strong> để công nhân nhặt hàng.</span>
       </p>
-      <span id="barcode-display" class="hidden text-[11px] font-mono-code px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">MÃ SPX: HN-20-10-TX05-N</span>
+      <span id="barcode-display" class="hidden text-[9px] sm:text-[10px] font-mono-code px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap ml-2">SPX: HN-20-10</span>
     </div>
 
-    <!-- Nút bấm hành động -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-      <div class="flex items-center gap-2">
-        <button id="btn-action" onclick="runNextPackingStep()" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <!-- Hàng 4: Tất cả nút điều khiển trên 1 hàng ngang duy nhất -->
+    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 sm:gap-1.5 pt-0.5">
+      <div class="flex items-center gap-1 sm:gap-1.5">
+        <button id="btn-action" onclick="handleActionButton()" class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <span id="btn-action-label">1. Lấy sản phẩm</span>
         </button>
 
-        <button onclick="autoRunSimulation()" id="btn-auto" class="px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95">
-          Tự động chạy (Auto)
+        <button onclick="autoRunSimulation()" id="btn-auto" class="px-2 py-1.5 sm:px-2.5 sm:py-1.5 text-[11px] sm:text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95 whitespace-nowrap">
+          Auto
         </button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button onclick="toggleWorkerVisibility()" id="btn-worker-toggle" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition" title="Bật/Tắt mô hình người thao tác">
-          👤 Người thao tác: <strong class="text-emerald-400" id="worker-status">BẬT</strong>
+      <div class="flex items-center gap-1">
+        <button onclick="toggleWorkerVisibility()" id="btn-worker-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt mô hình người thao tác">
+          👤 <strong class="text-emerald-400" id="worker-status">BẬT</strong>
         </button>
-        <button onclick="toggleFOVCones()" id="btn-fov-toggle" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition" title="Bật/Tắt chóp tia camera">
-          📐 Tia: <strong class="text-blue-400" id="fov-status">BẬT</strong>
+        <button onclick="toggleFOVCones()" id="btn-fov-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt chóp tia camera">
+          📐 <strong class="text-blue-400" id="fov-status">BẬT</strong>
         </button>
-        <button onclick="resetPackingProcess()" class="px-2.5 py-2 text-xs rounded-xl bg-slate-800/80 hover:bg-red-500/20 hover:text-red-300 text-slate-400 border border-slate-700/70 transition" title="Làm mới trạng thái">
-          ↺ Đơn mới
+        <button onclick="handleResetProcess()" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-red-500/20 hover:text-red-300 text-slate-400 border border-slate-700/70 transition whitespace-nowrap" title="Làm mới trạng thái">
+          <span id="btn-reset-label">↺ Đơn mới</span>
         </button>
       </div>
     </div>
@@ -291,13 +311,17 @@
     let simGroup = new THREE.Group();
     let workerGroup = new THREE.Group();
 
-    // Đối tượng trong quy trình mô phỏng đóng gói
+    // Đối tượng trong quy trình mô phỏng đóng gói & khui hàng hoàn
     let boxGroup, boxFlaps = [], productMesh, tapeStripMesh, qrLabelMesh;
     let bubbleWrapGroup, bubbleWrapMesh, bubbleTapeMesh;
-    let tapeDispenserMesh;
+    let tapeDispenserMesh, utilityKnifeMesh;
     let camLaserLine;
     let cam1WorldPos = new THREE.Vector3();
     let cam2WorldPos = new THREE.Vector3();
+
+    // Textures & biển hiệu cho 2 quy trình (Đóng hàng vs Khui hàng hoàn)
+    let packQRTexture, returnQRTexture;
+    let stagingSignSprite, dispatchSignSprite;
 
     // Biến điều khiển người thật thao tác 3D
     let showWorker = true;
@@ -310,7 +334,9 @@
     const localLeftShoulder = new THREE.Vector3(-0.18, 1.28, -0.03);
     const localRightShoulder = new THREE.Vector3(0.18, 1.28, -0.03);
 
-    let packingStep = 0; // 0: Chờ, 1: Lấy hàng, 2: Lên bàn, 3: Quét mã, 4: Vào hộp, 5: Dán kín, 6: Bọc xốp, 7: Dán tem, 8: Bàn giao
+    let currentMode = 'pack'; // 'pack': Đóng hàng mới, 'return': Khui hàng hoàn
+    let packingStep = 0; // 0: Chờ, 1-8: Các bước đóng gói
+    let returnStep = 0;  // 0: Chờ, 1-8: Các bước khui hàng hoàn
     let isAutoRunning = false;
     let showFovCones = true;
 
@@ -394,6 +420,32 @@
       } catch (e) {}
     }
 
+    function playSliceSound() {
+      try {
+        initAudio();
+        // Giả lập tiếng rọc dao sắc bén qua băng keo / xốp nổ
+        const bufferSize = Math.floor(audioCtx.sampleRate * 0.28);
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.16;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(3400, audioCtx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.28);
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.28);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+      } catch (e) {}
+    }
+
     function playSoftThudSound() {
       try {
         initAudio();
@@ -470,10 +522,10 @@
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.target.set(-0.35, 0.85, 0);
+      controls.target.set(-0.35, 0.85, 0); // Giữ nguyên 100% tâm ngắm gốc trên Desktop
       controls.maxPolarAngle = Math.PI / 2 + 0.04;
       controls.minDistance = 0.5;
-      controls.maxDistance = 8;
+      controls.maxDistance = 25; // Cho phép phóng to thu nhỏ thoải mái
 
       // 2. KHỞI TẠO 2 CAMERA CCTV PHỤ (PiP CAMERAS)
       setupPiPCameras();
@@ -504,6 +556,14 @@
       scene.add(dimGroup);
 
       window.addEventListener('resize', onWindowResize, false);
+      if (window.innerWidth < window.innerHeight) {
+        onWindowResize();
+        setCameraView('iso', 0);
+      } else {
+        camera.position.set(2.4, 2.2, 2.6);
+        controls.target.set(-0.35, 0.85, 0);
+        controls.update();
+      }
 
       // Cập nhật đồng hồ CCTV
       setInterval(updateCCTVClocks, 1000);
@@ -658,6 +718,40 @@
       });
     }
 
+    function createSignTexture(title, subtitle, borderColor, textColor) {
+      const signCanvas = document.createElement('canvas');
+      signCanvas.width = 640; signCanvas.height = 128;
+      const sCtx = signCanvas.getContext('2d');
+      sCtx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.fill();
+      sCtx.strokeStyle = borderColor;
+      sCtx.lineWidth = 4;
+      sCtx.roundRect(6, 6, 628, 116, 20);
+      sCtx.stroke();
+      sCtx.fillStyle = textColor;
+      sCtx.font = 'bold 26px sans-serif';
+      sCtx.textAlign = 'center';
+      sCtx.fillText(title, 320, 56);
+      sCtx.fillStyle = '#94a3b8';
+      sCtx.font = 'bold 18px monospace';
+      sCtx.fillText(subtitle, 320, 98);
+      return new THREE.CanvasTexture(signCanvas);
+    }
+
+    function updateTableSigns(mode) {
+      if (!stagingSignSprite || !dispatchSignSprite) return;
+      if (mode === 'pack') {
+        stagingSignSprite.material.map = createSignTexture('BÀN ĐỂ SẢN PHẨM', 'STAGING & PICKING ZONE', '#38bdf8', '#38bdf8');
+        dispatchSignSprite.material.map = createSignTexture('BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI', 'OUTBOUND & COURIER DISPATCH', '#10b981', '#10b981');
+      } else {
+        stagingSignSprite.material.map = createSignTexture('BÀN TIẾP NHẬN HÀNG HOÀN', 'INBOUND RMA & PICKING ZONE', '#38bdf8', '#38bdf8');
+        dispatchSignSprite.material.map = createSignTexture('BÀN LƯU KHO HÀNG HOÀN', 'RETURN RESTOCK & STORAGE', '#10b981', '#10b981');
+      }
+      stagingSignSprite.material.needsUpdate = true;
+      dispatchSignSprite.material.needsUpdate = true;
+    }
+
     // DỰNG BÀN ĐỂ SẢN PHẨM BÊN CẠNH (STAGING & PICKING TABLE)
     function buildProductStagingTableStructure() {
       const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.65 });
@@ -769,28 +863,13 @@
       tableGroup.add(scanHead);
 
       // 5. BIỂN TÊN VÙNG ĐỂ SẢN PHẨM TRỰC QUAN (RỘNG RÃI, SẮC NÉT)
-      const signCanvas = document.createElement('canvas');
-      signCanvas.width = 640; signCanvas.height = 128;
-      const sCtx = signCanvas.getContext('2d');
-      sCtx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-      sCtx.roundRect(6, 6, 628, 116, 20);
-      sCtx.fill();
-      sCtx.strokeStyle = '#38bdf8';
-      sCtx.lineWidth = 4;
-      sCtx.roundRect(6, 6, 628, 116, 20);
-      sCtx.stroke();
-      sCtx.fillStyle = '#38bdf8';
-      sCtx.font = 'bold 28px sans-serif';
-      sCtx.textAlign = 'center';
-      sCtx.fillText('BÀN ĐỂ SẢN PHẨM', 320, 56);
-      sCtx.fillStyle = '#94a3b8';
-      sCtx.font = 'bold 18px monospace';
-      sCtx.fillText('STAGING & PICKING ZONE', 320, 98);
-
-      const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(signCanvas), transparent: true }));
-      signSprite.scale.set(0.60, 0.12, 1);
-      signSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
-      tableGroup.add(signSprite);
+      stagingSignSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: createSignTexture('BÀN ĐỂ SẢN PHẨM', 'STAGING & PICKING ZONE', '#38bdf8', '#38bdf8'),
+        transparent: true
+      }));
+      stagingSignSprite.scale.set(0.60, 0.12, 1);
+      stagingSignSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
+      tableGroup.add(stagingSignSprite);
     }
 
     // DỰNG BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI BÊN PHẢI (OUTBOUND & DISPATCH STAGING TABLE)
@@ -896,28 +975,13 @@
       manifestBoard.add(clip);
 
       // 5. BIỂN TÊN VÙNG BÀN GIAO / CHỜ LẤY HÀNG (RỘNG RÃI, KHÔNG BỊ TRÀN CHỮ)
-      const signCanvas = document.createElement('canvas');
-      signCanvas.width = 640; signCanvas.height = 128;
-      const sCtx = signCanvas.getContext('2d');
-      sCtx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-      sCtx.roundRect(6, 6, 628, 116, 20);
-      sCtx.fill();
-      sCtx.strokeStyle = '#10b981';
-      sCtx.lineWidth = 4;
-      sCtx.roundRect(6, 6, 628, 116, 20);
-      sCtx.stroke();
-      sCtx.fillStyle = '#10b981';
-      sCtx.font = 'bold 26px sans-serif';
-      sCtx.textAlign = 'center';
-      sCtx.fillText('BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI', 320, 56);
-      sCtx.fillStyle = '#94a3b8';
-      sCtx.font = 'bold 18px monospace';
-      sCtx.fillText('OUTBOUND & COURIER DISPATCH', 320, 98);
-
-      const signSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(signCanvas), transparent: true }));
-      signSprite.scale.set(0.60, 0.12, 1);
-      signSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
-      tableGroup.add(signSprite);
+      dispatchSignSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: createSignTexture('BÀN ĐỰNG HÀNG SAU ĐÓNG GÓI', 'OUTBOUND & COURIER DISPATCH', '#10b981', '#10b981'),
+        transparent: true
+      }));
+      dispatchSignSprite.scale.set(0.60, 0.12, 1);
+      dispatchSignSprite.position.set(centerX, tableH + 0.35, centerZ - tableD / 2);
+      tableGroup.add(dispatchSignSprite);
     }
 
     function buildGantryAndCamerasStructure() {
@@ -1212,6 +1276,39 @@
       return g;
     }
 
+    // TẠO DAO RỌC GIẤY CÔNG NGHIỆP DÙNG CHO KHUI HÀNG HOÀN (UTILITY BOX CUTTER)
+    function createUtilityKnifeMesh() {
+      const g = new THREE.Group();
+      const yellowMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.35, metalness: 0.1 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+      const metalBladeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.15, metalness: 0.95 });
+
+      // Thân dao rọc giấy màu vàng công nghiệp
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.014, 0.026), yellowMat);
+      body.castShadow = true;
+      g.add(body);
+
+      // Ốp tay cầm chống trượt màu đen
+      const grip = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.016, 0.027), darkMat);
+      grip.position.set(-0.01, 0, 0);
+      g.add(grip);
+
+      // Nút trượt khóa lưỡi dao
+      const slider = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.02, 0.014), darkMat);
+      slider.position.set(0.02, 0.008, 0);
+      g.add(slider);
+
+      // Lưỡi dao thép hợp kim vát chéo
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.002, 0.018), metalBladeMat);
+      blade.position.set(0.075, 0.001, 0);
+      blade.rotation.y = 0.12;
+      g.add(blade);
+
+      g.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+      g.rotation.y = -Math.PI * 0.15;
+      return g;
+    }
+
     function buildInteractivePackingObjects() {
       // 1. VÙNG QUÉT MÃ VẬN ĐƠN (NÉT ĐỨT TRÊN BÀN - DẠNG DỌC A6)
       const zoneW = 0.22, zoneD = 0.28;
@@ -1255,13 +1352,19 @@
       // 3. PHIẾU IN MÃ QR VẬN ĐƠN (TEM SPX A6 TIÊU CHUẨN 110x155mm)
       const labelW = 0.11, labelD = 0.155;
       const qrCanvas = createRealisticQRCanvas();
-      const qrTexture = new THREE.CanvasTexture(qrCanvas);
-      qrTexture.minFilter = THREE.LinearFilter;
-      qrTexture.magFilter = THREE.LinearFilter;
-      qrTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      packQRTexture = new THREE.CanvasTexture(qrCanvas);
+      packQRTexture.minFilter = THREE.LinearFilter;
+      packQRTexture.magFilter = THREE.LinearFilter;
+      packQRTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      const returnCanvas = createRealisticReturnQRCanvas();
+      returnQRTexture = new THREE.CanvasTexture(returnCanvas);
+      returnQRTexture.minFilter = THREE.LinearFilter;
+      returnQRTexture.magFilter = THREE.LinearFilter;
+      returnQRTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
       const qrGeo = new THREE.PlaneGeometry(labelW, labelD);
-      const qrMat = new THREE.MeshBasicMaterial({ map: qrTexture, side: THREE.DoubleSide });
+      const qrMat = new THREE.MeshBasicMaterial({ map: packQRTexture, side: THREE.DoubleSide });
 
       qrLabelMesh = new THREE.Mesh(qrGeo, qrMat);
       qrLabelMesh.rotation.x = -Math.PI / 2;
@@ -1285,10 +1388,13 @@
       stageMatLine.position.set(-0.50, TABLE_HEIGHT + 0.001, 0.12);
       simGroup.add(stageMatLine);
 
-      // 4. DỤNG CỤ CẮT BĂNG DÍNH CẦM TAY MÀU CAM (Y HỆT TRÊN BÀN ĐÓNG HÀNG TRONG ẢNH MẪU)
+      // 4. DỤNG CỤ CẮT BĂNG DÍNH CẦM TAY & DAO RỌC GIẤY
       tapeDispenserMesh = createTapeDispenserMesh();
       tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
       simGroup.add(tapeDispenserMesh);
+
+      utilityKnifeMesh = createUtilityKnifeMesh();
+      simGroup.add(utilityKnifeMesh);
 
       // 5. THÙNG CARTON ĐÓNG HÀNG (BOX)
       const boxW = 0.28, boxH = 0.16, boxD = 0.22;
@@ -1547,6 +1653,162 @@
       ctx.font = 'bold 20px sans-serif';
       ctx.fillStyle = '#475569';
       ctx.fillText('Áp dụng chính sách bảo vệ người mua', c.width / 2, 960);
+      ctx.textAlign = 'left';
+
+      return c;
+    }
+
+    // TẠO TEM HÀNG HOÀN TRẢ SPX RETURN CHUẨN THƯƠNG MẠI ĐIỆN TỬ
+    function createRealisticReturnQRCanvas() {
+      const c = document.createElement('canvas');
+      c.width = 720;
+      c.height = 1040;
+      const ctx = c.getContext('2d');
+
+      // Nền trắng tinh khiết
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // Viền tem đỏ sẫm phân biệt rõ đơn hoàn trả
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(14, 14, c.width - 28, c.height - 28);
+
+      // 1. HEADER: LOGO SPX + BADGE ĐƠN HOÀN TRẢ
+      ctx.fillStyle = '#dc2626';
+      ctx.font = '900 58px sans-serif';
+      ctx.fillText('SPX', 38, 78);
+
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(170, 36, 175, 48);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('HÀNG HOÀN', 257, 69);
+      ctx.textAlign = 'left';
+
+      // Barcode góc trên bên phải
+      const topBx = 370, topBy = 28, topBh = 40;
+      ctx.fillStyle = '#000000';
+      for (let i = 0; i < 46; i++) {
+        const w = (i % 3 === 0 || i % 5 === 0) ? 5 : 2.5;
+        ctx.fillRect(topBx + i * 6.5, topBy, w, topBh);
+      }
+      ctx.font = '15px JetBrains Mono, monospace';
+      ctx.fillText('RET-VN-889921478', topBx + 14, topBy + 56);
+
+      // Vạch ngăn cách Header
+      ctx.fillStyle = '#fca5a5';
+      ctx.fillRect(24, 100, c.width - 48, 3);
+
+      // 2. KHUNG ROUTE CODE VẬN ĐƠN HOÀN & QR CODE
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(28, 118, c.width - 56, 314);
+
+      // Cột trái: Mã định tuyến hoàn
+      ctx.fillStyle = '#dc2626';
+      ctx.font = '900 36px JetBrains Mono, sans-serif';
+      ctx.fillText('RET-HN-20-TX05-N', 42, 172);
+
+      ctx.fillStyle = '#7f1d1d';
+      ctx.font = 'bold 20px JetBrains Mono, sans-serif';
+      ctx.fillText('TRUNG TÂM HOÀN TRẢ SOC', 42, 208);
+
+      ctx.font = '900 32px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#0f172a';
+      ctx.fillText('HUB-RETURN-08', 42, 256);
+
+      ctx.fillStyle = '#475569';
+      ctx.font = '17px sans-serif';
+      ctx.fillText('Người mua: Nguyễn Văn A (098***)', 42, 292);
+      ctx.fillText('Lý do hoàn: Khách không vừa / đổi mẫu', 42, 326);
+      ctx.fillText('Người nhận hoàn: BETACAM Store', 42, 360);
+      ctx.fillText('Hà Nội, Việt Nam', 42, 394);
+
+      // Cột phải: MÃ QR CODE HOÀN TRẢ
+      const qrx = 430, qry = 135, qrs = 230;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(qrx, qry, qrs, qrs);
+
+      function drawEye(ex, ey) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(ex + 14, ey + 14, 58, 58);
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(ex + 26, ey + 26, 34, 34);
+      }
+      drawEye(qrx, qry);
+      drawEye(qrx + qrs - 86, qry);
+      drawEye(qrx, qry + qrs - 86);
+
+      const grid = 16, cSize = 11;
+      for (let r = 0; r < grid; r++) {
+        for (let col = 0; col < grid; col++) {
+          if ((r < 5 && col < 5) || (r < 5 && col > grid - 6) || (r > grid - 6 && col < 5)) continue;
+          if (Math.random() > 0.42) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(qrx + 30 + col * cSize, qry + 30 + r * cSize, cSize - 2, cSize - 2);
+          }
+        }
+      }
+
+      ctx.font = 'bold 15px JetBrains Mono, monospace';
+      ctx.fillStyle = '#dc2626';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPX-RETURN', qrx + qrs / 2, qry + qrs + 22);
+      ctx.fillText('HN-RET-05', qrx + qrs / 2, qry + qrs + 38);
+      ctx.textAlign = 'left';
+
+      // 3. THÔNG TIN CHỈ DẪN & TIỀN THU
+      ctx.fillStyle = '#fef2f2';
+      ctx.fillRect(28, 448, c.width - 56, 175);
+      ctx.strokeStyle = '#fca5a5';
+      ctx.strokeRect(28, 448, c.width - 56, 175);
+
+      ctx.fillStyle = '#991b1b';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText('Chỉ dẫn: BẮT BUỘC ĐỒNG KIỂM & QUAY VIDEO KHUI HÀNG', 42, 482);
+
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('Nội dung hoàn: [Gói 01 Camera Giám Sát Đóng Hàng]', 42, 518);
+      ctx.fillText('Khối lượng: 1.250 g | Yêu cầu: Đúng tem bảo hành', 42, 552);
+
+      ctx.font = '900 38px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#dc2626';
+      ctx.fillText('HOÀN TIỀN', 42, 604);
+
+      ctx.font = 'bold 19px JetBrains Mono, sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('26-09-2026 14:40', 430, 604);
+
+      // 4. MÃ VẠCH 1D BARCODE DƯỚI ĐÁY
+      const barX = 46, barY = 645, barH = 135;
+      ctx.fillStyle = '#000000';
+      let cx = barX;
+      for (let i = 0; i < 94; i++) {
+        const bw = (i % 4 === 0 || i % 6 === 0) ? 8 : 4;
+        ctx.fillRect(cx, barY, bw, barH);
+        cx += bw + 3.1;
+      }
+
+      ctx.font = 'bold 28px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPXVN04589921478-RET', c.width / 2, barY + barH + 42);
+
+      // 5. BANNER CẢNH BÁO ĐỐI SOÁT CAMERA
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 3;
+      ctx.fillStyle = '#fff1f2';
+      ctx.fillRect(48, 865, c.width - 96, 120);
+      ctx.strokeRect(48, 865, c.width - 96, 120);
+
+      ctx.fillStyle = '#991b1b';
+      ctx.font = '900 30px sans-serif';
+      ctx.fillText('LƯU VẾT VIDEO ĐỐI SOÁT KHIẾU NẠI', c.width / 2, 918);
+      ctx.font = 'bold 19px sans-serif';
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillText('Hệ thống camera kép lưu trữ tự động theo mã vận đơn', c.width / 2, 958);
       ctx.textAlign = 'left';
 
       return c;
@@ -1825,42 +2087,88 @@
       }
     }
 
+    // HÀM BƯỚC ĐI RA BÀN LẤY HÀNG (NẾU CÔNG NHÂN ĐANG Ở BÀN CHÍNH)
+    function ensureWorkerAtPickingTable(onReady) {
+      const currentX = workerGroup.position.x;
+      if (Math.abs(currentX - (-1.35)) < 0.15) {
+        workerGroup.position.set(-1.35, 0, 0.68);
+        onReady();
+        return;
+      }
+
+      updateInstruction("Công nhân đang di chuyển ra bàn lấy hàng bên cạnh...", "bg-blue-500/20 text-blue-300");
+      const startTime = performance.now();
+      const duration = 850;
+
+      function animWalkToTable(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        const workerX = THREE.MathUtils.lerp(currentX, -1.35, ease);
+        workerGroup.position.x = workerX;
+
+        const stride = Math.sin(p * Math.PI * 5);
+        if (leftLegGroup && rightLegGroup) {
+          leftLegGroup.rotation.x = stride * 0.38;
+          rightLegGroup.rotation.x = -stride * 0.38;
+        }
+        workerGroup.position.y = Math.abs(stride) * 0.022;
+
+        targetLHand.set(workerX - 0.12, TABLE_HEIGHT + 0.14, 0.38);
+        targetRHand.set(workerX + 0.12, TABLE_HEIGHT + 0.14, 0.38);
+
+        if (p < 1) {
+          requestAnimationFrame(animWalkToTable);
+        } else {
+          if (leftLegGroup && rightLegGroup) {
+            leftLegGroup.rotation.x = 0;
+            rightLegGroup.rotation.x = 0;
+          }
+          workerGroup.position.set(-1.35, 0, 0.68);
+          onReady();
+        }
+      }
+      requestAnimationFrame(animWalkToTable);
+    }
+
     // BƯỚC 1: LẤY SẢN PHẨM (NHẶT ĐÚNG HÀNG THEO PHIẾU/ĐƠN TỪ BÀN ĐỂ SẢN PHẨM BÊN CẠNH)
     function step1_PickProduct() {
       highlightStepNode(1);
-      updateInstruction("Công nhân kiểm tra phiếu/đơn và lấy sản phẩm từ bàn để sản phẩm bên cạnh...", "bg-blue-500/20 text-blue-300");
       document.getElementById('btn-action').disabled = true;
 
-      // Hai tay công nhân vươn tới sản phẩm trên bàn để sản phẩm
-      targetLHand.set(-1.46, TABLE_HEIGHT + 0.13, 0.10);
-      targetRHand.set(-1.24, TABLE_HEIGHT + 0.13, 0.10);
+      ensureWorkerAtPickingTable(() => {
+        updateInstruction("Công nhân kiểm tra phiếu/đơn và lấy sản phẩm từ bàn để sản phẩm bên cạnh...", "bg-blue-500/20 text-blue-300");
 
-      const startPos = productMesh.position.clone();
-      const targetPos = new THREE.Vector3(-1.35, TABLE_HEIGHT + 0.22, 0.10);
-      const startTime = performance.now();
-      const duration = 700;
+        // Hai tay công nhân vươn tới sản phẩm trên bàn để sản phẩm
+        targetLHand.set(-1.46, TABLE_HEIGHT + 0.13, 0.10);
+        targetRHand.set(-1.24, TABLE_HEIGHT + 0.13, 0.10);
 
-      function animLift(now) {
-        const p = Math.min((now - startTime) / duration, 1);
-        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
-        productMesh.position.lerpVectors(startPos, targetPos, ease);
+        const startPos = productMesh.position.clone();
+        const targetPos = new THREE.Vector3(-1.35, TABLE_HEIGHT + 0.22, 0.10);
+        const startTime = performance.now();
+        const duration = 700;
 
-        if (p < 1) {
-          requestAnimationFrame(animLift);
-        } else {
-          playSoftThudSound();
-          packingStep = 1;
-          document.getElementById('step-badge').innerText = "Bước 1/8: Đã lấy từ bàn sản phẩm";
-          document.getElementById('btn-action-label').innerText = "2. Đi qua bàn đóng hàng";
-          document.getElementById('btn-action').disabled = false;
-          updateInstruction("Đã nhặt sản phẩm từ bàn chờ! Nhấn tiếp để công nhân đi qua bàn đóng hàng.", "bg-blue-500/20 text-blue-300");
+        function animLift(now) {
+          const p = Math.min((now - startTime) / duration, 1);
+          const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+          productMesh.position.lerpVectors(startPos, targetPos, ease);
 
-          if (isAutoRunning) {
-            setTimeout(runNextPackingStep, 800);
+          if (p < 1) {
+            requestAnimationFrame(animLift);
+          } else {
+            playSoftThudSound();
+            packingStep = 1;
+            document.getElementById('step-badge').innerText = "Bước 1/8: Đã lấy từ bàn sản phẩm";
+            document.getElementById('btn-action-label').innerText = "2. Đi qua bàn đóng hàng";
+            document.getElementById('btn-action').disabled = false;
+            updateInstruction("Đã nhặt sản phẩm từ bàn chờ! Nhấn tiếp để công nhân đi qua bàn đóng hàng.", "bg-blue-500/20 text-blue-300");
+
+            if (isAutoRunning) {
+              setTimeout(runNextPackingStep, 800);
+            }
           }
         }
-      }
-      requestAnimationFrame(animLift);
+        requestAnimationFrame(animLift);
+      });
     }
 
     // BƯỚC 2: ĐI QUA ĐỂ SẢN PHẨM LÊN BÀN ĐÓNG HÀNG
@@ -2239,7 +2547,7 @@
 
           packingStep = 8;
           document.getElementById('step-badge').innerText = "Bước 8/8: Đã chuyển sang bàn bàn giao";
-          document.getElementById('step-badge').className = "px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold";
+          document.getElementById('step-badge').className = "px-1.5 py-0.5 sm:px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]";
           document.getElementById('btn-action-label').innerText = "Đơn mới (Reset)";
           document.getElementById('btn-action').disabled = false;
           updateInstruction("🎉 Đã bàn giao kiện hàng sang bàn chờ lấy hàng thành công! Nhấn \"Đơn mới\" để đóng gói đơn tiếp theo.", "bg-emerald-500/30 text-emerald-200 font-bold");
@@ -2252,32 +2560,731 @@
       requestAnimationFrame(animExit);
     }
 
+    // ==========================================
+    // CẤU HÌNH VÀ BỘ CHUYỂN ĐỔI QUY TRÌNH (ĐÓNG HÀNG & KHUI HÀNG HOÀN)
+    // ==========================================
+    const WORKFLOW_STEPS = {
+      pack: [
+        { num: 1, title: '1. Lấy hàng', sub: 'Bàn chờ' },
+        { num: 2, title: '2. Đi qua bàn', sub: 'Đặt lên bàn' },
+        { num: 3, title: '3. Quét mã', sub: 'Cam 2 scan' },
+        { num: 4, title: '4. Vào hộp', sub: 'Gập 4 nắp' },
+        { num: 5, title: '5. Niêm phong', sub: 'Dán băng keo' },
+        { num: 6, title: '6. Bọc xốp', sub: 'Bóng khí' },
+        { num: 7, title: '7. Dán tem', sub: 'Tem SPX' },
+        { num: 8, title: '8. Bàn giao', sub: 'Chờ lấy' },
+      ],
+      return: [
+        { num: 1, title: '1. Nhận kiện', sub: 'Bàn lấy hàng' },
+        { num: 2, title: '2. Đi qua bàn', sub: 'Đặt lên bàn' },
+        { num: 3, title: '3. Quét mã', sub: 'Cam 2 scan' },
+        { num: 4, title: '4. Ngoại quan', sub: 'Soi 6 mặt' },
+        { num: 5, title: '5. Rạch xốp', sub: 'Cắt bóng khí' },
+        { num: 6, title: '6. Mở thùng', sub: 'Mở 4 nắp' },
+        { num: 7, title: '7. Soi hàng', sub: 'Tem & serial' },
+        { num: 8, title: '8. Lưu kho', sub: 'Hoàn kho' },
+      ]
+    };
+
+    function renderStepperNodes(mode) {
+      const steps = WORKFLOW_STEPS[mode] || WORKFLOW_STEPS.pack;
+      steps.forEach(s => {
+        const node = document.getElementById('step-node-' + s.num);
+        if (node) {
+          node.innerHTML = `
+            <div class="font-bold text-[9px] truncate">${s.title}</div>
+            <div class="text-[8px] text-slate-500 truncate">${s.sub}</div>
+          `;
+        }
+      });
+    }
+
+    function switchWorkflowMode(mode) {
+      if (currentMode === mode) return;
+      currentMode = mode;
+      isAutoRunning = false;
+
+      const tabPack = document.getElementById('tab-mode-pack');
+      const tabReturn = document.getElementById('tab-mode-return');
+      const titleEl = document.getElementById('workflow-title');
+      const cctvTitleEl = document.getElementById('cctv-main-title');
+      const resetLabel = document.getElementById('btn-reset-label');
+
+      if (mode === 'pack') {
+        tabPack.className = "py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25";
+        tabReturn.className = "py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300";
+        if (titleEl) titleEl.innerText = "QUY TRÌNH ĐÓNG HÀNG BỌC XỐP NGOÀI HỘP (8 BƯỚC THỰC TẾ)";
+        if (cctvTitleEl) cctvTitleEl.innerText = "GIÁM SÁT ĐÓNG HÀNG (2-IN-1 VIEW)";
+        if (resetLabel) resetLabel.innerText = "↺ Đơn mới";
+        if (qrLabelMesh && packQRTexture) {
+          qrLabelMesh.material.map = packQRTexture;
+          qrLabelMesh.material.needsUpdate = true;
+        }
+        updateTableSigns('pack');
+        renderStepperNodes('pack');
+        resetPackingProcess();
+      } else {
+        tabPack.className = "py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300";
+        tabReturn.className = "py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-md shadow-rose-500/25";
+        if (titleEl) titleEl.innerText = "QUY TRÌNH KHUI HÀNG HOÀN & KIỂM ĐỊNH ĐỐI SOÁT (8 BƯỚC THỰC TẾ)";
+        if (cctvTitleEl) cctvTitleEl.innerText = "GIÁM SÁT KHUI HÀNG HOÀN (RMA AUDIT 2-IN-1)";
+        if (resetLabel) resetLabel.innerText = "↺ Đơn hoàn mới";
+        if (qrLabelMesh && returnQRTexture) {
+          qrLabelMesh.material.map = returnQRTexture;
+          qrLabelMesh.material.needsUpdate = true;
+        }
+        updateTableSigns('return');
+        renderStepperNodes('return');
+        resetReturnProcess();
+      }
+    }
+
+    function handleActionButton() {
+      if (currentMode === 'pack') {
+        runNextPackingStep();
+      } else {
+        runNextReturnStep();
+      }
+    }
+
+    function handleResetProcess() {
+      if (currentMode === 'pack') {
+        resetPackingProcess();
+      } else {
+        resetReturnProcess();
+      }
+    }
+
+    // ==========================================
+    // QUY TRÌNH KHUI HÀNG HOÀN (8 BƯỚC CHUẨN THƯƠNG MẠI ĐIỆN TỬ)
+    // ==========================================
+    function runNextReturnStep() {
+      initAudio();
+      if (returnStep === 0) {
+        returnStep1_PickParcel();
+      } else if (returnStep === 1) {
+        returnStep2_StageOnTable();
+      } else if (returnStep === 2) {
+        returnStep3_ScanReturnQR();
+      } else if (returnStep === 3) {
+        returnStep4_InspectExterior();
+      } else if (returnStep === 4) {
+        returnStep5_CutBubbleWrap();
+      } else if (returnStep === 5) {
+        returnStep6_OpenCartonFlaps();
+      } else if (returnStep === 6) {
+        returnStep7_InspectProduct();
+      } else if (returnStep === 7) {
+        returnStep8_RestockHandover();
+      } else if (returnStep === 8) {
+        resetReturnProcess();
+      }
+    }
+
+    // BƯỚC 1 (HOÀN): NHẬN KIỆN HOÀN TỪ BÀN LẤY HÀNG BÊN CẠNH
+    function returnStep1_PickParcel() {
+      highlightStepNode(1);
+      document.getElementById('btn-action').disabled = true;
+
+      ensureWorkerAtPickingTable(() => {
+        updateInstruction("Công nhân kiểm tra phiếu gửi và lấy kiện hàng hoàn từ bàn lấy hàng bên cạnh...", "bg-amber-500/20 text-amber-300");
+
+        // Hai tay công nhân vươn tới kiện hàng hoàn trên bàn lấy hàng (-1.35, 0.10)
+        targetLHand.set(-1.46, TABLE_HEIGHT + 0.13, 0.10);
+        targetRHand.set(-1.24, TABLE_HEIGHT + 0.13, 0.10);
+
+        const startBoxY = boxGroup.position.y;
+        const targetBoxY = TABLE_HEIGHT + 0.18;
+        const startTime = performance.now();
+        const duration = 700;
+
+        function animLift(now) {
+          const p = Math.min((now - startTime) / duration, 1);
+          const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+          const curY = THREE.MathUtils.lerp(startBoxY, targetBoxY, ease);
+
+          boxGroup.position.y = curY;
+          productMesh.position.y = curY + 0.055;
+          qrLabelMesh.position.y = curY + 0.16 + 0.028;
+
+          targetLHand.set(-1.46, curY + 0.08, 0.10);
+          targetRHand.set(-1.24, curY + 0.08, 0.10);
+
+          if (p < 1) {
+            requestAnimationFrame(animLift);
+          } else {
+            playSoftThudSound();
+            returnStep = 1;
+            document.getElementById('step-badge').innerText = "Bước 1/8: Đã nhận kiện hoàn";
+            document.getElementById('btn-action-label').innerText = "2. Đi qua bàn kiểm hàng";
+            document.getElementById('btn-action').disabled = false;
+            updateInstruction("Đã nhặt kiện hoàn từ bàn lấy hàng! Nhấn tiếp để công nhân đi qua bàn kiểm hàng.", "bg-amber-500/20 text-amber-300");
+
+            if (isAutoRunning) {
+              setTimeout(runNextReturnStep, 800);
+            }
+          }
+        }
+        requestAnimationFrame(animLift);
+      });
+    }
+
+    // BƯỚC 2 (HOÀN): ĐI QUA VÀ ĐẶT KIỆN LÊN BÀN KIỂM TRA DƯỚI CAM 1
+    function returnStep2_StageOnTable() {
+      highlightStepNode(2);
+      updateInstruction("Công nhân đang đi qua và chuyển kiện hàng hoàn lên bàn kiểm hàng...", "bg-amber-500/20 text-amber-300");
+      document.getElementById('btn-action').disabled = true;
+
+      const startTime = performance.now();
+      const duration = 1200; // Thời gian bước đi qua bàn kiểm hàng
+
+      function animWalk(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+
+        // Công nhân đi từ bàn lấy hàng bên trái (X = -1.35) sang vị trí thao tác bên trái bàn kiểm hàng (X = -0.25)
+        const workerX = THREE.MathUtils.lerp(-1.35, -0.25, ease);
+        workerGroup.position.x = workerX;
+
+        // Hoạt ảnh hai chân bước đi nhịp nhàng & độ nhấp nhô cơ thể
+        const stride = Math.sin(p * Math.PI * 6);
+        if (leftLegGroup && rightLegGroup) {
+          leftLegGroup.rotation.x = stride * 0.38;
+          rightLegGroup.rotation.x = -stride * 0.38;
+        }
+        workerGroup.position.y = Math.abs(stride) * 0.022;
+
+        // Hai tay ôm kiện hàng hoàn trước ngực di chuyển cùng người
+        targetLHand.set(workerX - 0.14, TABLE_HEIGHT + 0.22, 0.40);
+        targetRHand.set(workerX + 0.14, TABLE_HEIGHT + 0.22, 0.40);
+        boxGroup.position.set(workerX, TABLE_HEIGHT + 0.20, 0.36);
+        productMesh.position.set(workerX, TABLE_HEIGHT + 0.20 + 0.055, 0.36);
+        qrLabelMesh.position.set(workerX, TABLE_HEIGHT + 0.20 + 0.16 + 0.028, 0.36);
+
+        if (p < 1) {
+          requestAnimationFrame(animWalk);
+        } else {
+          // Khi đến bàn kiểm hàng: Dừng bước và đặt kiện hàng xuống vị trí trung tâm bàn
+          if (leftLegGroup && rightLegGroup) {
+            leftLegGroup.rotation.x = 0;
+            rightLegGroup.rotation.x = 0;
+          }
+          workerGroup.position.set(-0.25, 0, 0.68);
+
+          // Đặt kiện hàng vào giữa bàn kiểm hàng (PACK_X = -0.05, PACK_Z = 0.05)
+          boxGroup.position.set(PACK_X, TABLE_HEIGHT, PACK_Z);
+          productMesh.position.set(PACK_X, TABLE_HEIGHT + 0.055, PACK_Z);
+          qrLabelMesh.position.set(PACK_X, TABLE_HEIGHT + 0.16 + 0.028, PACK_Z);
+
+          targetLHand.set(PACK_X - 0.16, TABLE_HEIGHT + 0.10, PACK_Z);
+          targetRHand.set(PACK_X + 0.16, TABLE_HEIGHT + 0.10, PACK_Z);
+          playSoftThudSound();
+
+          returnStep = 2;
+          document.getElementById('step-badge').innerText = "Bước 2/8: Kiện hoàn đã ở giữa bàn";
+          document.getElementById('btn-action-label').innerText = "3. Quét mã vận đơn hoàn";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Kiện hàng hoàn đã đặt giữa bàn kiểm tra! Nhấn tiếp để đưa mã vào Cam 2 quét đối soát.", "bg-amber-500/20 text-amber-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextReturnStep, 800);
+          }
+        }
+      }
+      requestAnimationFrame(animWalk);
+    }
+
+    // BƯỚC 3 (HOÀN): QUÉT MÃ VẬN ĐƠN HOÀN DƯỚI CAM 2 ĐỐI SOÁT HỆ THỐNG
+    function returnStep3_ScanReturnQR() {
+      highlightStepNode(3);
+      updateInstruction("Đang đưa mã vận đơn hoàn vào vùng quét dưới Cam 2 để đối soát hệ thống...", "bg-rose-500/20 text-rose-300");
+      document.getElementById('btn-action').disabled = true;
+
+      const startX = boxGroup.position.x;
+      const startZ = boxGroup.position.z;
+      const targetX = ZONE_X;
+      const targetZ = ZONE_Z;
+      const startTime = performance.now();
+      const duration = 650;
+
+      function animSlide(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        const curX = THREE.MathUtils.lerp(startX, targetX, ease);
+        const curZ = THREE.MathUtils.lerp(startZ, targetZ, ease);
+
+        boxGroup.position.set(curX, TABLE_HEIGHT, curZ);
+        productMesh.position.set(curX, TABLE_HEIGHT + 0.055, curZ);
+        qrLabelMesh.position.set(curX, TABLE_HEIGHT + 0.16 + 0.028, curZ);
+
+        targetLHand.set(curX - 0.16, TABLE_HEIGHT + 0.12, curZ);
+        targetRHand.set(curX + 0.16, TABLE_HEIGHT + 0.12, curZ);
+
+        if (p < 1) {
+          requestAnimationFrame(animSlide);
+        } else {
+          camLaserLine.position.set(ZONE_X, TABLE_HEIGHT + 0.16 + 0.035, ZONE_Z);
+          camLaserLine.visible = true;
+
+          const pipLaser = document.getElementById('pip2-laser-beam');
+          if (pipLaser) pipLaser.classList.remove('hidden');
+
+          document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-red-500/20 text-red-300 border border-red-500/50 font-bold animate-pulse";
+          document.getElementById('qr-scan-badge').innerText = "ĐANG ĐỐI SOÁT...";
+
+          setTimeout(() => {
+            playBeepSound();
+            if (pipLaser) pipLaser.classList.add('hidden');
+            camLaserLine.visible = false;
+
+            document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold";
+            document.getElementById('qr-scan-badge').innerText = "ĐỐI SOÁT KHỚP";
+            document.getElementById('barcode-display').classList.remove('hidden');
+            document.getElementById('barcode-display').innerText = "MÃ HOÀN: RET-HN-20-TX05-N";
+            document.getElementById('qr-result-text').innerText = "RET-HN-20-TX05";
+
+            const backStart = performance.now();
+            const backDur = 450;
+            function animBack(bNow) {
+              const bp = Math.min((bNow - backStart) / backDur, 1);
+              const bEase = 0.5 - Math.cos(bp * Math.PI) / 2;
+              const bx = THREE.MathUtils.lerp(ZONE_X, PACK_X, bEase);
+              const bz = THREE.MathUtils.lerp(ZONE_Z, PACK_Z, bEase);
+
+              boxGroup.position.set(bx, TABLE_HEIGHT, bz);
+              productMesh.position.set(bx, TABLE_HEIGHT + 0.055, bz);
+              qrLabelMesh.position.set(bx, TABLE_HEIGHT + 0.16 + 0.028, bz);
+
+              targetLHand.set(bx - 0.16, TABLE_HEIGHT + 0.12, bz);
+              targetRHand.set(bx + 0.16, TABLE_HEIGHT + 0.12, bz);
+
+              if (bp < 1) {
+                requestAnimationFrame(animBack);
+              } else {
+                returnStep = 3;
+                document.getElementById('step-badge').innerText = "Bước 3/8: Đã quét & đối soát mã hoàn";
+                document.getElementById('btn-action-label').innerText = "4. Soi ngoại quan kiện";
+                document.getElementById('btn-action').disabled = false;
+                updateInstruction("Hệ thống đã khớp đơn hoàn! Nhấn tiếp để soi 6 mặt ngoại quan kiện trước camera.", "bg-rose-500/20 text-rose-300");
+
+                if (isAutoRunning) {
+                  setTimeout(runNextReturnStep, 850);
+                }
+              }
+            }
+            requestAnimationFrame(animBack);
+          }, 700);
+        }
+      }
+      requestAnimationFrame(animSlide);
+    }
+
+    // BƯỚC 4 (HOÀN): SOI NGOẠI QUAN 6 MẶT GHI NHẬN TÌNH TRẠNG BAO BÌ
+    function returnStep4_InspectExterior() {
+      highlightStepNode(4);
+      updateInstruction("Đang xoay lật 6 mặt kiện hàng dưới camera để ghi nhận tình trạng bao bì nguyên vẹn...", "bg-amber-500/20 text-amber-300");
+      document.getElementById('btn-action').disabled = true;
+
+      const startTime = performance.now();
+      const duration = 1200;
+
+      function animInspect(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const liftH = Math.sin(p * Math.PI) * 0.12;
+        const curY = TABLE_HEIGHT + liftH;
+
+        const rotY = Math.sin(p * Math.PI * 2) * 0.45;
+        const rotZ = Math.sin(p * Math.PI) * 0.18;
+
+        boxGroup.position.y = curY;
+        boxGroup.rotation.y = rotY;
+        boxGroup.rotation.z = rotZ;
+
+        productMesh.position.y = curY + 0.055;
+        productMesh.rotation.y = rotY;
+        productMesh.rotation.z = rotZ;
+
+        qrLabelMesh.position.y = curY + 0.16 + 0.028;
+        qrLabelMesh.rotation.y = rotY;
+        qrLabelMesh.rotation.z = rotZ;
+
+        targetLHand.set(PACK_X - 0.18, curY + 0.08, PACK_Z);
+        targetRHand.set(PACK_X + 0.18, curY + 0.08, PACK_Z);
+
+        if (p < 1) {
+          requestAnimationFrame(animInspect);
+        } else {
+          boxGroup.position.set(PACK_X, TABLE_HEIGHT, PACK_Z);
+          boxGroup.rotation.set(0, 0, 0);
+
+          productMesh.position.set(PACK_X, TABLE_HEIGHT + 0.055, PACK_Z);
+          productMesh.rotation.set(0, 0, 0);
+
+          qrLabelMesh.position.set(PACK_X, TABLE_HEIGHT + 0.16 + 0.028, PACK_Z);
+          qrLabelMesh.rotation.set(-Math.PI / 2, 0, 0);
+
+          playSoftThudSound();
+
+          document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold";
+          document.getElementById('qr-scan-badge').innerText = "BAO BÌ: NGUYÊN VẸN";
+
+          returnStep = 4;
+          document.getElementById('step-badge').innerText = "Bước 4/8: Đã ghi nhận ngoại quan";
+          document.getElementById('btn-action-label').innerText = "5. Rạch bọc xốp nổ";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Ngoại quan bao bì nguyên vẹn, không có dấu hiệu bóc rách! Nhấn tiếp để rạch bọc xốp nổ.", "bg-amber-500/20 text-amber-300");
+
+          if (isAutoRunning) {
+            setTimeout(runNextReturnStep, 850);
+          }
+        }
+      }
+      requestAnimationFrame(animInspect);
+    }
+
+    // BƯỚC 5 (HOÀN): RẠCH BĂNG KEO & BÓC TÁCH LỚP XỐP NỔ BẢO VỆ
+    function returnStep5_CutBubbleWrap() {
+      highlightStepNode(5);
+      updateInstruction("Dùng dao rọc rạch băng keo niêm phong và bóc tách lớp xốp nổ bảo vệ...", "bg-sky-500/20 text-sky-300");
+      document.getElementById('btn-action').disabled = true;
+
+      playSliceSound();
+
+      const startX = PACK_X + 0.15;
+      const targetX = PACK_X - 0.15;
+      const cutY = TABLE_HEIGHT + 0.16 + 0.035;
+      const startTime = performance.now();
+      const duration = 650;
+
+      function animSlice(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const curX = THREE.MathUtils.lerp(startX, targetX, p);
+
+        if (utilityKnifeMesh) {
+          utilityKnifeMesh.position.set(curX, cutY, PACK_Z);
+          utilityKnifeMesh.rotation.set(0, 0, -0.15);
+          targetRHand.set(curX + 0.03, cutY + 0.02, PACK_Z);
+        }
+        targetLHand.set(PACK_X - 0.18, TABLE_HEIGHT + 0.12, PACK_Z);
+
+        if (p < 1) {
+          requestAnimationFrame(animSlice);
+        } else {
+          playBubbleWrapSound();
+          bubbleTapeMesh.visible = false;
+
+          const wrapStart = performance.now();
+          const wrapDur = 450;
+          function animWrapOff(wNow) {
+            const wp = Math.min((wNow - wrapStart) / wrapDur, 1);
+            const wScale = THREE.MathUtils.lerp(1.0, 1.25, wp);
+            bubbleWrapMesh.scale.set(wScale, wScale, wScale);
+            bubbleWrapMesh.material.opacity = (1 - wp) * 0.88;
+
+            if (wp < 1) {
+              requestAnimationFrame(animWrapOff);
+            } else {
+              bubbleWrapGroup.visible = false;
+              bubbleWrapMesh.material.opacity = 0.88;
+              bubbleWrapMesh.scale.set(1, 1, 1);
+
+              qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
+
+              if (utilityKnifeMesh) {
+                utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+                utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
+              }
+              targetRHand.set(PACK_X + 0.15, TABLE_HEIGHT + 0.14, PACK_Z);
+              targetLHand.set(PACK_X - 0.15, TABLE_HEIGHT + 0.14, PACK_Z);
+
+              returnStep = 5;
+              document.getElementById('step-badge').innerText = "Bước 5/8: Đã bóc lớp xốp nổ";
+              document.getElementById('btn-action-label').innerText = "6. Mở nắp hộp carton";
+              document.getElementById('btn-action').disabled = false;
+              updateInstruction("Đã bóc lớp xốp nổ bảo vệ! Nhấn tiếp để rạch băng keo và mở nắp thùng carton.", "bg-sky-500/20 text-sky-300");
+
+              if (isAutoRunning) {
+                setTimeout(runNextReturnStep, 850);
+              }
+            }
+          }
+          requestAnimationFrame(animWrapOff);
+        }
+      }
+      requestAnimationFrame(animSlice);
+    }
+
+    // BƯỚC 6 (HOÀN): MỞ NẮP THÙNG CARTON TRƯỚC CAMERA
+    function returnStep6_OpenCartonFlaps() {
+      highlightStepNode(6);
+      updateInstruction("Rạch băng keo niêm phong hộp và mở toàn bộ 4 nắp thùng carton...", "bg-purple-500/20 text-purple-300");
+      document.getElementById('btn-action').disabled = true;
+
+      playSliceSound();
+
+      if (utilityKnifeMesh) {
+        utilityKnifeMesh.position.set(PACK_X, TABLE_HEIGHT + 0.16 + 0.02, PACK_Z);
+      }
+
+      setTimeout(() => {
+        tapeStripMesh.visible = false;
+        if (utilityKnifeMesh) {
+          utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+          utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
+        }
+
+        const flapStart = performance.now();
+        const flapDur = 650;
+        function animFlaps(fNow) {
+          const fp = Math.min((fNow - flapStart) / flapDur, 1);
+          const fEase = 0.5 - Math.cos(fp * Math.PI) / 2;
+
+          boxFlaps.forEach(flap => {
+            const curRot = THREE.MathUtils.lerp(flap.closeRot, flap.openRot, fEase);
+            if (flap.axis === 'x') flap.pivot.rotation.x = curRot;
+            if (flap.axis === 'z') flap.pivot.rotation.z = curRot;
+          });
+
+          targetLHand.set(PACK_X - 0.14, TABLE_HEIGHT + 0.18, PACK_Z);
+          targetRHand.set(PACK_X + 0.14, TABLE_HEIGHT + 0.18, PACK_Z);
+
+          if (fp < 1) {
+            requestAnimationFrame(animFlaps);
+          } else {
+            playSoftThudSound();
+            returnStep = 6;
+            document.getElementById('step-badge').innerText = "Bước 6/8: Đã mở nắp thùng carton";
+            document.getElementById('btn-action-label').innerText = "7. Soi sản phẩm & phụ kiện";
+            document.getElementById('btn-action').disabled = false;
+            updateInstruction("Nắp hộp đã mở, thấy sản phẩm bên trong! Nhấn tiếp để nhấc sản phẩm soi chi tiết.", "bg-purple-500/20 text-purple-300");
+
+            if (isAutoRunning) {
+              setTimeout(runNextReturnStep, 850);
+            }
+          }
+        }
+        requestAnimationFrame(animFlaps);
+      }, 250);
+    }
+
+    // BƯỚC 7 (HOÀN): SOI SẢN PHẨM & TEM BẢO HÀNH TRƯỚC 2 CAMERA
+    function returnStep7_InspectProduct() {
+      highlightStepNode(7);
+      updateInstruction("Nhấc sản phẩm ra, giơ lên trước camera kiểm tra ngoại quan, tem serial & phụ kiện...", "bg-emerald-500/20 text-emerald-300");
+      document.getElementById('btn-action').disabled = true;
+
+      const startY = productMesh.position.y;
+      const targetPos = new THREE.Vector3(PACK_X + 0.12, TABLE_HEIGHT + 0.24, PACK_Z + 0.06);
+      const startTime = performance.now();
+      const duration = 750;
+
+      function animLiftProd(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+
+        productMesh.position.x = THREE.MathUtils.lerp(PACK_X, targetPos.x, ease);
+        productMesh.position.y = THREE.MathUtils.lerp(startY, targetPos.y, ease);
+        productMesh.position.z = THREE.MathUtils.lerp(PACK_Z, targetPos.z, ease);
+        productMesh.rotation.y = Math.sin(p * Math.PI) * 0.35;
+
+        targetLHand.set(productMesh.position.x - 0.11, productMesh.position.y, productMesh.position.z);
+        targetRHand.set(productMesh.position.x + 0.11, productMesh.position.y, productMesh.position.z);
+
+        if (p < 1) {
+          requestAnimationFrame(animLiftProd);
+        } else {
+          playSuccessChime();
+
+          document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold";
+          document.getElementById('qr-scan-badge').innerText = "ĐẠT CHUẨN HOÀN";
+          document.getElementById('qr-result-text').innerText = "ĐỦ PHỤ KIỆN / NGUYÊN TEM";
+
+          returnStep = 7;
+          document.getElementById('step-badge').innerText = "Bước 7/8: Sản phẩm đúng chuẩn, nguyên vẹn";
+          document.getElementById('btn-action-label').innerText = "8. Phân loại & Lưu kho hoàn";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("Sản phẩm đúng của shop, nguyên tem bảo hành và đầy đủ phụ kiện! Nhấn tiếp để nhập kho hoàn.", "bg-emerald-500/20 text-emerald-200");
+
+          if (isAutoRunning) {
+            setTimeout(runNextReturnStep, 950);
+          }
+        }
+      }
+      requestAnimationFrame(animLiftProd);
+    }
+
+    // BƯỚC 8 (HOÀN): BÀN GIAO LƯU KHO BÀN BÊN PHẢI
+    function returnStep8_RestockHandover() {
+      highlightStepNode(8);
+      updateInstruction("Công nhân đang chuyển sản phẩm đạt chuẩn sang bàn bàn giao lưu kho bên phải...", "bg-slate-800 text-slate-200");
+      document.getElementById('btn-action').disabled = true;
+
+      const startPos = productMesh.position.clone();
+      const targetPos = new THREE.Vector3(1.25, TABLE_HEIGHT + 0.055, 0.10);
+      const startTime = performance.now();
+      const duration = 900;
+
+      function animExitProd(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+        productMesh.position.lerpVectors(startPos, targetPos, ease);
+        productMesh.rotation.y = THREE.MathUtils.lerp(0.35, 0, ease);
+
+        const pushProgress = Math.min(p * 1.5, 1);
+        const handX = THREE.MathUtils.lerp(PACK_X + 0.15, 0.48, pushProgress);
+        targetLHand.set(handX - 0.10, TABLE_HEIGHT + 0.14, PACK_Z);
+        targetRHand.set(handX + 0.10, TABLE_HEIGHT + 0.14, PACK_Z);
+
+        if (p < 1) {
+          requestAnimationFrame(animExitProd);
+        } else {
+          productMesh.position.copy(targetPos);
+          productMesh.rotation.set(0, 0, 0);
+          playSoftThudSound();
+
+          targetLHand.set(-0.15, TABLE_HEIGHT + 0.08, 0.42);
+          targetRHand.set(0.15, TABLE_HEIGHT + 0.08, 0.42);
+
+          returnStep = 8;
+          document.getElementById('step-badge').innerText = "Bước 8/8: Hoàn tất khui kiểm hàng hoàn";
+          document.getElementById('step-badge').className = "px-1.5 py-0.5 sm:px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]";
+          document.getElementById('btn-action-label').innerText = "Đơn hoàn mới (Reset)";
+          document.getElementById('btn-action').disabled = false;
+          updateInstruction("🎉 Quy trình khui hàng hoàn hoàn tất! Video đã được lưu vết đối soát. Nhấn \"Đơn hoàn mới\" để kiểm kiện tiếp theo.", "bg-emerald-500/30 text-emerald-200 font-bold");
+
+          if (isAutoRunning) {
+            setTimeout(resetReturnProcess, 1500);
+          }
+        }
+      }
+      requestAnimationFrame(animExitProd);
+    }
+
     function autoRunSimulation() {
       if (isAutoRunning) return;
       isAutoRunning = true;
-      document.getElementById('btn-auto').classList.add('bg-blue-600', 'text-white');
-      document.getElementById('btn-auto').innerText = "Đang chạy Auto...";
-      runNextPackingStep();
+      const btnAuto = document.getElementById('btn-auto');
+      if (btnAuto) {
+        if (currentMode === 'return') {
+          btnAuto.classList.add('bg-rose-600', 'text-white');
+        } else {
+          btnAuto.classList.add('bg-blue-600', 'text-white');
+        }
+        btnAuto.innerText = "Đang chạy Auto...";
+      }
+      if (currentMode === 'pack') {
+        runNextPackingStep();
+      } else {
+        runNextReturnStep();
+      }
+    }
+
+    function resetReturnProcess() {
+      isAutoRunning = false;
+      returnStep = 0;
+      const btnAuto = document.getElementById('btn-auto');
+      if (btnAuto) {
+        btnAuto.classList.remove('bg-blue-600', 'bg-rose-600', 'text-white');
+        btnAuto.innerText = "Tự động chạy (Auto)";
+      }
+
+      // Đặt lại các đối tượng về trạng thái ban đầu của Khui Hàng Hoàn
+      // Kiện hoàn bắt đầu nằm ở BÀN LẤY HÀNG BÊN TRÁI (X = -1.35, Z = 0.10)
+      const targetX = -1.35;
+      const targetZ = 0.10;
+      boxGroup.position.set(targetX, TABLE_HEIGHT, targetZ);
+      boxGroup.rotation.set(0, 0, 0);
+
+      // Đóng kín 4 nắp thùng
+      boxFlaps.forEach(flap => {
+        if (flap.axis === 'x') flap.pivot.rotation.x = flap.closeRot;
+        if (flap.axis === 'z') flap.pivot.rotation.z = flap.closeRot;
+      });
+
+      // Băng dính thùng hộp hiển thị
+      tapeStripMesh.visible = true;
+      tapeStripMesh.scale.x = 1;
+
+      // Lớp xốp nổ bọc ngoài hộp hiển thị
+      if (bubbleWrapGroup) {
+        bubbleWrapGroup.visible = true;
+        bubbleWrapMesh.scale.set(1, 1, 1);
+        bubbleWrapMesh.material.opacity = 0.88;
+        bubbleTapeMesh.visible = true;
+      }
+
+      // Sản phẩm nằm bên trong thùng
+      const prodH = 0.11;
+      productMesh.position.set(targetX, TABLE_HEIGHT + prodH / 2, targetZ);
+      productMesh.rotation.set(0, 0, 0);
+      productMesh.visible = true;
+
+      // Tem hoàn dán trên nóc xốp nổ kiện hoàn
+      if (qrLabelMesh) {
+        if (returnQRTexture) {
+          qrLabelMesh.material.map = returnQRTexture;
+          qrLabelMesh.material.needsUpdate = true;
+        }
+        qrLabelMesh.position.set(targetX, TABLE_HEIGHT + 0.16 + 0.028, targetZ);
+        qrLabelMesh.rotation.set(-Math.PI / 2, 0, 0);
+      }
+
+      // Dao rọc giấy nằm ngay ngắn trên bàn đóng gói
+      if (utilityKnifeMesh) {
+        utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+        utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
+      }
+
+      camLaserLine.visible = false;
+      const pipLaser = document.getElementById('pip2-laser-beam');
+      if (pipLaser) pipLaser.classList.add('hidden');
+
+      // Đặt công nhân đứng trước bàn lấy hàng bên cạnh (X = -1.35)
+      workerGroup.position.set(-1.35, 0, 0.68);
+      if (leftLegGroup) leftLegGroup.rotation.x = 0;
+      if (rightLegGroup) rightLegGroup.rotation.x = 0;
+
+      // Vị trí nghỉ của hai tay công nhân tại bàn lấy hàng
+      targetLHand.set(-1.46, TABLE_HEIGHT + 0.08, 0.35);
+      targetRHand.set(-1.24, TABLE_HEIGHT + 0.08, 0.35);
+
+      document.getElementById('step-badge').innerText = "Bước 0/8: Chờ bắt đầu";
+      document.getElementById('step-badge').className = "px-1.5 py-0.5 sm:px-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]";
+      document.getElementById('btn-action-label').innerText = "1. Nhận kiện hoàn";
+      document.getElementById('btn-action').disabled = false;
+      document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold";
+      document.getElementById('qr-scan-badge').innerText = "CHỜ KIỆN HOÀN";
+      document.getElementById('qr-result-text').innerText = "CHỜ QUÉT MÃ";
+      document.getElementById('barcode-display').classList.add('hidden');
+
+      highlightStepNode(0);
+      updateInstruction("Nhấn <strong>\"1. Nhận kiện hoàn\"</strong> để công nhân tiếp nhận kiện hàng hoàn từ bàn lấy hàng bên cạnh.", "text-slate-300");
     }
 
     function resetPackingProcess() {
       isAutoRunning = false;
       packingStep = 0;
-      document.getElementById('btn-auto').classList.remove('bg-blue-600', 'text-white');
-      document.getElementById('btn-auto').innerText = "Tự động chạy (Auto)";
+      const btnAuto = document.getElementById('btn-auto');
+      if (btnAuto) {
+        btnAuto.classList.remove('bg-blue-600', 'bg-rose-600', 'text-white');
+        btnAuto.innerText = "Tự động chạy (Auto)";
+      }
 
       // Đặt lại các đối tượng về trạng thái ban đầu
       const prodH = 0.11;
       productMesh.position.set(-1.35, TABLE_HEIGHT + prodH / 2, 0.10);
+      productMesh.rotation.set(0, 0, 0);
       productMesh.visible = true;
 
       boxGroup.position.set(PACK_X, TABLE_HEIGHT, PACK_Z);
+      boxGroup.rotation.set(0, 0, 0);
       tapeStripMesh.visible = false;
       tapeStripMesh.scale.x = 1;
 
       if (bubbleWrapGroup) {
         bubbleWrapGroup.visible = false;
         bubbleWrapMesh.scale.set(1, 1, 1);
+        bubbleWrapMesh.material.opacity = 0.88;
       }
 
       boxFlaps.forEach(flap => {
@@ -2285,11 +3292,24 @@
         if (flap.axis === 'z') flap.pivot.rotation.z = flap.openRot;
       });
 
-      qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
+      if (qrLabelMesh) {
+        if (packQRTexture) {
+          qrLabelMesh.material.map = packQRTexture;
+          qrLabelMesh.material.needsUpdate = true;
+        }
+        qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
+        qrLabelMesh.rotation.set(-Math.PI / 2, 0, 0);
+      }
+
       camLaserLine.visible = false;
 
       if (tapeDispenserMesh) {
         tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
+      }
+
+      if (utilityKnifeMesh) {
+        utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+        utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
       }
 
       // Đặt lại công nhân về đứng trước bàn để sản phẩm bên cạnh
@@ -2305,7 +3325,7 @@
       if (pipLaser) pipLaser.classList.add('hidden');
 
       document.getElementById('step-badge').innerText = "Bước 0/8: Chờ bắt đầu";
-      document.getElementById('step-badge').className = "px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold";
+      document.getElementById('step-badge').className = "px-1.5 py-0.5 sm:px-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]";
       document.getElementById('btn-action-label').innerText = "1. Lấy sản phẩm";
       document.getElementById('btn-action').disabled = false;
       document.getElementById('qr-scan-badge').className = "px-1 py-0.5 rounded text-[8px] bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold";
@@ -2318,21 +3338,45 @@
     }
 
     function highlightStepNode(step) {
+      const isReturn = (currentMode === 'return');
       for (let i = 1; i <= 8; i++) {
         const el = document.getElementById('step-node-' + i);
         if (!el) continue;
         if (i === step) {
-          el.className = "p-1.5 rounded-xl bg-blue-600/30 border border-blue-500 text-white shadow-lg shadow-blue-500/20 transition-all scale-102";
+          if (isReturn) {
+            el.className = "py-1 px-0.5 rounded-lg bg-gradient-to-r from-amber-600/30 to-rose-600/30 border border-rose-500 text-white shadow-md shadow-rose-500/20 transition-all scale-102";
+          } else {
+            el.className = "py-1 px-0.5 rounded-lg bg-blue-600/30 border border-blue-500 text-white shadow-md shadow-blue-500/20 transition-all scale-102";
+          }
         } else if (i < step) {
-          el.className = "p-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition-all";
+          el.className = "py-1 px-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition-all";
         } else {
-          el.className = "p-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 transition-all";
+          el.className = "py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all";
+        }
+      }
+    }
+
+    let isStepperCollapsed = false;
+    function toggleStepperDetail() {
+      isStepperCollapsed = !isStepperCollapsed;
+      const container = document.getElementById('stepper-container');
+      const icon = document.getElementById('toggle-detail-icon');
+      const text = document.getElementById('toggle-detail-text');
+      if (container) {
+        if (isStepperCollapsed) {
+          container.classList.add('hidden');
+          if (icon) icon.innerText = '▸';
+          if (text) text.innerText = '8 bước';
+        } else {
+          container.classList.remove('hidden');
+          if (icon) icon.innerText = '▾';
+          if (text) text.innerText = 'Thu gọn';
         }
       }
     }
 
     function updateInstruction(html, badgeClass) {
-      document.getElementById('instruction-msg').innerHTML = `<span class="text-amber-400 font-bold">💡</span><span>${html}</span>`;
+      document.getElementById('instruction-msg').innerHTML = `<span class="text-amber-400 font-bold text-xs">💡</span><span class="truncate">${html}</span>`;
     }
 
     function toggleFOVCones() {
@@ -2342,23 +3386,64 @@
       document.getElementById('fov-status').className = showFovCones ? "text-blue-400" : "text-slate-500";
     }
 
-    function setCameraView(view) {
+    function setCameraView(view, duration = 750) {
       highlightBtn('btn-' + view);
       let targetPos = new THREE.Vector3();
-      let targetLook = new THREE.Vector3(-0.35, 0.85, 0);
+      let targetLook = new THREE.Vector3(0, 0.9, 0.1);
+      const isPortrait = window.innerWidth < window.innerHeight;
 
-      switch(view) {
-        case 'front': targetPos.set(-0.35, 1.0, 3.4); break;
-        case 'side': targetPos.set(3.4, 0.95, 0); targetLook.set(-0.2, 0.85, 0); break;
-        case 'top': targetPos.set(-0.35, 4.2, 0.001); targetLook.set(-0.35, 0, 0); break;
-        case 'iso':
-        default: targetPos.set(2.4, 2.2, 2.6); break;
+      if (isPortrait) {
+        // Trên màn hình dọc (mobile portrait), kéo camera lùi xa theo tỷ lệ khung hình
+        // và hạ nhẹ tâm nhìn để bàn nằm trọn vẹn trong khoảng hở giữa CCTV và thanh điều khiển
+        targetLook.set(0, 0.82, 0.1);
+        switch(view) {
+          case 'front': 
+            targetPos.set(0, 0.95, 6.8); 
+            break;
+          case 'side': 
+            targetPos.set(6.5, 1.25, 0.1); 
+            break;
+          case 'top': 
+            targetPos.set(0, 8.2, 0.101); 
+            targetLook.set(0, 0.0, 0.1);
+            break;
+          case 'iso':
+          default: 
+            targetPos.set(4.5, 3.6, 4.5); 
+            break;
+        }
+      } else {
+        // Trên màn hình ngang (desktop / laptop / tablet landscape) - Giữ nguyên 100% tọa độ gốc của bạn
+        targetLook.set(-0.35, 0.85, 0);
+        switch(view) {
+          case 'front': 
+            targetPos.set(-0.35, 1.0, 3.4); 
+            break;
+          case 'side': 
+            targetPos.set(3.4, 0.95, 0); 
+            targetLook.set(-0.2, 0.85, 0);
+            break;
+          case 'top': 
+            targetPos.set(-0.35, 4.2, 0.001); 
+            targetLook.set(-0.35, 0, 0);
+            break;
+          case 'iso':
+          default: 
+            targetPos.set(2.4, 2.2, 2.6); 
+            break;
+        }
+      }
+
+      if (duration === 0) {
+        camera.position.copy(targetPos);
+        controls.target.copy(targetLook);
+        controls.update();
+        return;
       }
 
       const startPos = camera.position.clone();
       const startLook = controls.target.clone();
       const startTime = performance.now();
-      const duration = 750;
 
       function tween(now) {
         const p = Math.min((now - startTime) / duration, 1);
@@ -2408,21 +3493,44 @@
 
     // ĐIỀU KHIỂN THU PHÓNG KHUNG PiP QR Ở GÓC PHẢI
     let pipExpanded = false;
+    const PIP_COMPACT_CLASSES = ['w-[105px]', 'xs:w-[125px]', 'sm:w-[145px]', 'md:w-[165px]'];
+    const PIP_EXPANDED_CLASSES = ['w-[180px]', 'xs:w-[210px]', 'sm:w-[245px]', 'md:w-[275px]'];
+
     function togglePipExpand() {
       const pip = document.getElementById('pip-cam2-container');
       const btn = document.getElementById('btn-toggle-pip');
       if (!pip) return;
       pipExpanded = !pipExpanded;
       if (pipExpanded) {
-        pip.classList.remove('w-[130px]', 'sm:w-[155px]', 'md:w-[170px]');
-        pip.classList.add('w-[210px]', 'sm:w-[240px]', 'md:w-[260px]');
-        if (btn) btn.innerHTML = '<span>Thu nhỏ QR</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+        PIP_COMPACT_CLASSES.forEach(c => pip.classList.remove(c));
+        PIP_EXPANDED_CLASSES.forEach(c => pip.classList.add(c));
+        if (btn) btn.innerHTML = '<span class="hidden sm:inline">Thu nhỏ QR</span><span class="sm:hidden">Thu nhỏ</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
       } else {
-        pip.classList.remove('w-[210px]', 'sm:w-[240px]', 'md:w-[260px]');
-        pip.classList.add('w-[130px]', 'sm:w-[155px]', 'md:w-[170px]');
-        if (btn) btn.innerHTML = '<span>Góc phải QR</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5m-11 7v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>';
+        PIP_EXPANDED_CLASSES.forEach(c => pip.classList.remove(c));
+        PIP_COMPACT_CLASSES.forEach(c => pip.classList.add(c));
+        if (btn) btn.innerHTML = '<span class="hidden sm:inline">Góc phải QR</span><span class="sm:hidden">Cam 2</span><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5m-11 7v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>';
       }
       setTimeout(onWindowResize, 60);
+    }
+
+    // ĐIỀU KHIỂN THU GỌN / MỞ RỘNG MÀN HÌNH CCTV HỢP NHẤT
+    let isCctvCollapsed = false;
+    function toggleCctvCollapse() {
+      const box = document.getElementById('cctv-screen-box');
+      const icon = document.getElementById('cctv-collapse-icon');
+      const label = document.getElementById('cctv-collapse-label');
+      if (!box) return;
+      isCctvCollapsed = !isCctvCollapsed;
+      if (isCctvCollapsed) {
+        box.classList.add('hidden');
+        if (icon) icon.innerText = '▸';
+        if (label) label.innerText = 'Mở CCTV';
+      } else {
+        box.classList.remove('hidden');
+        if (icon) icon.innerText = '▾';
+        if (label) label.innerText = 'Thu gọn';
+        setTimeout(onWindowResize, 60);
+      }
     }
 
     let isVideoPlaying = true;
@@ -2435,7 +3543,23 @@
     }
 
     function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const aspect = window.innerWidth / window.innerHeight;
+      camera.aspect = aspect;
+
+      // Hor+ FOV adaptation: Trên màn hình dọc (mobile portrait), tự động mở rộng FOV
+      // để toàn bộ xưởng (bàn nhặt hàng trái, bàn đóng hàng giữa, bàn xuất phải) không bị khuất ngang
+      if (aspect < 1.0) {
+        const defaultFov = 45;
+        const targetHFov = 2 * Math.atan(Math.tan((defaultFov * Math.PI) / 360) * (16 / 9));
+        const newVFov = 2 * Math.atan(Math.tan(targetHFov / 2) / aspect) * (180 / Math.PI);
+        camera.fov = Math.min(Math.max(newVFov, 50), 68);
+        // Chỉ trên mobile portrait: giảm nhẹ mật độ sương mù để cự ly xa không làm tối đen bàn
+        if (scene && scene.fog) scene.fog.density = 0.07;
+      } else {
+        camera.fov = 45;
+        // Trên desktop: giữ nguyên 100% mật độ sương mù gốc 0.14
+        if (scene && scene.fog) scene.fog.density = 0.14;
+      }
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -2443,23 +3567,27 @@
 
       const pip1 = document.getElementById('pip-canvas-cam1');
       const pip2 = document.getElementById('pip-canvas-cam2');
-      if (pip1 && pipRenderer1) {
+      if (pip1 && pipRenderer1 && !isCctvCollapsed) {
         const r1 = pip1.getBoundingClientRect();
         const w1 = Math.round(r1.width) || 480;
         const h1 = Math.round(r1.height) || 280;
-        pipRenderer1.setPixelRatio(pixelRatio);
-        pipRenderer1.setSize(w1, h1, false);
-        pipCam1.aspect = w1 / h1;
-        updatePipCam1Fov();
+        if (r1.width > 0 && r1.height > 0) {
+          pipRenderer1.setPixelRatio(pixelRatio);
+          pipRenderer1.setSize(w1, h1, false);
+          pipCam1.aspect = w1 / h1;
+          updatePipCam1Fov();
+        }
       }
-      if (pip2 && pipRenderer2) {
+      if (pip2 && pipRenderer2 && !isCctvCollapsed) {
         const r2 = pip2.getBoundingClientRect();
         const w2 = Math.round(r2.width) || 160;
         const h2 = Math.round(r2.height) || 220;
-        pipRenderer2.setPixelRatio(pixelRatio);
-        pipRenderer2.setSize(w2, h2, false);
-        pipCam2.aspect = w2 / h2;
-        pipCam2.updateProjectionMatrix();
+        if (r2.width > 0 && r2.height > 0) {
+          pipRenderer2.setPixelRatio(pixelRatio);
+          pipRenderer2.setSize(w2, h2, false);
+          pipCam2.aspect = w2 / h2;
+          pipCam2.updateProjectionMatrix();
+        }
       }
     }
 
@@ -2483,6 +3611,9 @@
 
       // 1. Render màn hình chính
       renderer.render(scene, camera);
+
+      // Khi CCTV bị thu gọn thì không cần render 2 canvas phụ (tiết kiệm GPU / pin mobile)
+      if (isCctvCollapsed) return;
 
       // 2. Render màn hình PiP CCTV 1 (Toàn cảnh)
       if (pipRenderer1 && pipCam1) {
