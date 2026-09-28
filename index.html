@@ -4,8 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mô Phỏng 3D Bàn Đóng Hàng & 2 Camera Giám Sát</title>
+  <!-- Favicon inline để tránh lỗi 404 -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: {
+            xs: '420px',
+          }
+        }
+      }
+    };
+  </script>
   <!-- Three.js & OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -39,6 +52,15 @@
     }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+
+    @media (max-height: 640px) {
+      #stepper-container {
+        display: none !important;
+      }
+      #cctv-screen-box {
+        height: 120px !important;
+      }
+    }
   </style>
 </head>
 <body class="text-slate-100 w-screen h-screen relative select-none">
@@ -46,27 +68,26 @@
   <!-- 3D Canvas chính -->
   <div id="canvas-container" class="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing z-0"></div>
 
-  <!-- Header thông tin dự án -->
   <!-- Header thông tin dự án (Responsive) -->
   <header class="absolute top-2 left-2 sm:top-3 sm:left-4 z-20 pointer-events-none">
-    <div class="glass-panel px-2.5 py-1.5 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl shadow-xl flex items-center gap-2 sm:gap-3 pointer-events-auto max-w-[calc(100vw-120px)] sm:max-w-none">
-      <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400 shrink-0">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="glass-panel px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl flex items-center gap-2 sm:gap-3 pointer-events-auto max-w-[calc(100vw-16px)] sm:max-w-none">
+      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-400 shrink-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
       </div>
       <div class="min-w-0">
         <h1 class="text-[11px] sm:text-xs md:text-sm font-bold tracking-tight text-white flex items-center gap-1.5 truncate">
           <span class="truncate">BÀN ĐÓNG HÀNG & 2 CAM</span>
-          <span class="hidden xs:inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase font-mono-code font-bold shrink-0">LIVE</span>
+          <span class="inline-block text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase font-mono-code font-bold shrink-0">LIVE</span>
         </h1>
-        <p class="hidden sm:block text-[10px] md:text-[11px] text-slate-400 font-mono-code truncate">Kích thước chuẩn: 1500 x 1000 x 1800 mm</p>
+        <p class="hidden sm:block text-[10px] text-slate-400 font-mono-code truncate">Kích thước chuẩn: 1500 x 1000 x 1800 mm</p>
       </div>
     </div>
   </header>
 
   <!-- KHUNG XEM HỢP NHẤT 2 CAMERA (PICTURE-IN-PICTURE NVR MONITOR - RESPONSIVE) -->
-  <aside class="absolute top-12 left-2 right-2 sm:left-auto sm:top-3 sm:right-4 z-20 flex flex-col gap-1.5 sm:gap-2.5 w-auto sm:w-96 md:w-[460px] lg:w-[500px] pointer-events-auto">
+  <aside class="absolute top-14 left-2 right-2 sm:left-auto sm:top-3 sm:right-4 z-20 flex flex-col gap-1.5 sm:gap-2.5 w-auto sm:w-[320px] md:w-[370px] lg:w-[430px] xl:w-[480px] pointer-events-auto">
     <!-- Hộp điều khiển góc nhìn nhanh bản vẽ kỹ thuật -->
     <div class="glass-panel p-1 sm:p-1.5 rounded-xl sm:rounded-2xl shadow-xl flex items-center justify-between text-xs">
       <span class="text-[10px] sm:text-[11px] text-slate-400 font-mono-code pl-1.5 sm:pl-2">Góc nhìn:</span>
@@ -84,7 +105,7 @@
       <div class="flex items-center justify-between pb-1.5 px-0.5 sm:px-1 border-b border-slate-700/60 mb-1.5 sm:mb-2">
         <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></span>
-          <span id="cctv-main-title" class="text-[11px] sm:text-xs font-bold font-mono-code text-white uppercase tracking-wide truncate">GIÁM SÁT ĐÓNG HÀNG</span>
+          <span id="cctv-main-title" class="text-[10px] sm:text-xs font-bold font-mono-code text-white uppercase tracking-wide truncate">GIÁM SÁT ĐÓNG HÀNG</span>
           <span id="cctv-mode-badge" class="hidden xs:inline-block text-[8px] sm:text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono-code font-semibold shrink-0">2-IN-1</span>
         </div>
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -101,17 +122,17 @@
       </div>
 
       <!-- Màn hình CCTV chính (Toàn cảnh Cam 1) + PiP Cam 2 ở góc phải -->
-      <div id="cctv-screen-box" class="cctv-screen rounded-xl relative w-full h-[220px] sm:h-[260px] md:h-[290px] border border-sky-500/30 shadow-inner overflow-hidden bg-black select-none transition-all duration-300">
+      <div id="cctv-screen-box" class="cctv-screen rounded-xl relative w-full h-[140px] xs:h-[165px] sm:h-[190px] md:h-[225px] lg:h-[265px] border border-sky-500/30 shadow-inner overflow-hidden bg-black select-none transition-all duration-300">
         
         <!-- Canvas Cam 1: Toàn cảnh bàn đóng hàng -->
         <canvas id="pip-canvas-cam1" class="w-full h-full block object-cover"></canvas>
 
         <!-- OSD Cam 1 (Góc trên bên trái) - Chuẩn CCTV Camera như trong ảnh thực tế -->
         <div class="absolute top-1.5 left-2 sm:top-2 sm:left-2.5 pointer-events-none z-10 flex flex-col gap-0.5 text-left">
-          <div id="cctv-osd-time" class="text-[10px] sm:text-[11px] md:text-xs font-mono-code font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-wide">
+          <div id="cctv-osd-time" class="text-[9px] sm:text-[11px] md:text-xs font-mono-code font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] tracking-wide">
             09-25-2026 Fri 15:06:19
           </div>
-          <div class="flex items-center gap-1 text-[8px] sm:text-[9px] font-mono-code">
+          <div class="flex items-center gap-1 text-[7px] sm:text-[9px] font-mono-code">
             <span class="text-red-400 font-bold drop-shadow">● REC</span>
             <span class="text-slate-300 bg-black/60 px-1 rounded">CH-01</span>
           </div>
@@ -124,10 +145,10 @@
         </div>
 
         <!-- KHUNG PiP: CAM 02 QUÉT MÃ QR NẰM GÓC PHẢI KHUNG VIEW -->
-        <div id="pip-cam2-container" class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bottom-8 w-[105px] xs:w-[125px] sm:w-[145px] md:w-[165px] z-20 flex flex-col bg-slate-950/95 border-2 border-emerald-500/90 rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 group">
+        <div id="pip-cam2-container" class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bottom-7 sm:bottom-8 w-[95px] xs:w-[115px] sm:w-[130px] md:w-[155px] lg:w-[170px] z-20 flex flex-col bg-slate-950/95 border-2 border-emerald-500/90 rounded-lg shadow-[0_4px_25px_rgba(0,0,0,0.85)] overflow-hidden transition-all duration-300 group">
           
           <!-- Thanh tiêu đề của PiP Cam 2 -->
-          <div class="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-slate-900/90 border-b border-emerald-500/30 flex items-center justify-between text-[8px] sm:text-[9px] font-mono-code shrink-0">
+          <div class="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-slate-900/90 border-b border-emerald-500/30 flex items-center justify-between text-[7px] sm:text-[9px] font-mono-code shrink-0">
             <div class="flex items-center gap-1">
               <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span class="font-bold text-emerald-300 tracking-wider">CAM 02</span>
@@ -159,17 +180,17 @@
           <!-- Thanh trạng thái kết quả của PiP Cam 2 -->
           <div class="px-1 py-0.5 sm:px-1.5 sm:py-1 bg-slate-900/95 border-t border-slate-800 text-[7px] sm:text-[8px] font-mono-code flex items-center justify-between text-slate-300 shrink-0">
             <span class="text-slate-400">MÃ:</span>
-            <span id="qr-result-text" class="text-emerald-300 font-bold truncate max-w-[80px] sm:max-w-[105px]">VÙNG SCAN</span>
+            <span id="qr-result-text" class="text-emerald-300 font-bold truncate max-w-[70px] sm:max-w-[105px]">VÙNG SCAN</span>
           </div>
         </div>
 
         <!-- Thanh player bar mô phỏng đầu ghi NVR dưới đáy -->
-        <div class="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm border-t border-slate-800/80 px-2 sm:px-2.5 flex items-center justify-between text-[9px] sm:text-[10px] font-mono-code z-10 text-slate-300">
+        <div class="absolute bottom-0 left-0 right-0 h-6 sm:h-7 bg-black/85 backdrop-blur-sm border-t border-slate-800/80 px-2 sm:px-2.5 flex items-center justify-between text-[8px] sm:text-[10px] font-mono-code z-10 text-slate-300">
           <div class="flex items-center gap-1.5 sm:gap-2">
             <button onclick="toggleVideoPlayback()" class="text-white hover:text-sky-400 transition" title="Tạm dừng/Tiếp tục">
               <span id="play-pause-icon">▶</span>
             </button>
-            <span id="cctv-timer" class="text-slate-400 text-[8px] sm:text-[9px]">0:00 / LIVE</span>
+            <span id="cctv-timer" class="text-slate-400 text-[7px] sm:text-[9px]">0:00 / LIVE</span>
           </div>
           <div class="hidden sm:block text-[8px] text-slate-500 tracking-wider">
             CH1 (1080P) + CH2 (PiP)
@@ -185,17 +206,17 @@
   </aside>
 
   <!-- BẢNG ĐIỀU KHIỂN QUY TRÌNH (THIẾT KẾ RESPONSIVE GỌN GÀNG) -->
-  <div class="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 md:right-auto md:w-[600px] z-20 glass-panel p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-2xl space-y-1.5 sm:space-y-2">
+  <div class="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-4 sm:right-auto sm:w-[350px] md:w-[410px] lg:w-[500px] xl:w-[580px] z-20 glass-panel p-2 sm:p-2.5 rounded-xl sm:rounded-2xl shadow-2xl space-y-1.5 sm:space-y-2 max-w-[480px] sm:max-w-none mx-auto sm:mx-0">
     
     <!-- Hàng 1: Tab chuyển đổi Quy trình & Trạng thái tiến trình -->
     <div class="flex items-center justify-between gap-1.5 sm:gap-2">
       <!-- Tab chuyển đổi Đóng hàng / Khui hoàn -->
-      <div class="flex items-center p-0.5 bg-slate-900/90 rounded-xl border border-slate-700/70">
-        <button id="tab-mode-pack" onclick="switchWorkflowMode('pack')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25">
+      <div class="flex items-center p-0.5 bg-slate-900/90 rounded-xl border border-slate-700/70 shrink-0">
+        <button id="tab-mode-pack" onclick="switchWorkflowMode('pack')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25">
           <span>📦</span>
           <span>Đóng hàng</span>
         </button>
-        <button id="tab-mode-return" onclick="switchWorkflowMode('return')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
+        <button id="tab-mode-return" onclick="switchWorkflowMode('return')" class="py-1 px-2 sm:px-2.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center gap-1 sm:gap-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
           <span>🔄</span>
           <span>Khui hoàn</span>
         </button>
@@ -204,9 +225,9 @@
       <span id="workflow-title" class="hidden">QUY TRÌNH ĐÓNG HÀNG BỌC XỐP NGOÀI HỘP (8 BƯỚC THỰC TẾ)</span>
 
       <!-- Tiến trình & Nút Bật/Tắt xem 8 bước -->
-      <div class="flex items-center gap-1 sm:gap-1.5">
-        <span id="step-badge" class="px-1.5 py-0.5 sm:px-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] sm:text-[11px] font-mono-code font-bold truncate max-w-[130px] xs:max-w-[170px] sm:max-w-[200px]">Bước 0/8: Chờ</span>
-        <button onclick="toggleStepperDetail()" id="btn-toggle-detail" class="py-0.5 px-1.5 sm:py-1 sm:px-2 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition flex items-center gap-1" title="Thu gọn / Mở rộng chi tiết 8 bước">
+      <div class="flex items-center gap-1 sm:gap-1.5 min-w-0">
+        <span id="step-badge" class="px-1.5 py-0.5 sm:px-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[9px] sm:text-[11px] font-mono-code font-bold truncate max-w-[105px] xs:max-w-[150px] sm:max-w-[200px]">Bước 0/8: Chờ</span>
+        <button onclick="toggleStepperDetail()" id="btn-toggle-detail" class="py-0.5 px-1.5 sm:py-1 sm:px-2 rounded-lg text-[9px] sm:text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition flex items-center gap-1 shrink-0" title="Thu gọn / Mở rộng chi tiết 8 bước">
           <span id="toggle-detail-icon">▾</span>
           <span id="toggle-detail-text">8 bước</span>
         </button>
@@ -215,38 +236,38 @@
 
     <!-- Hàng 2: 8 Bước trực quan (4 cột trên mobile, 8 cột trên tablet/desktop) -->
     <div id="stepper-container" class="transition-all duration-300 overflow-hidden">
-      <div class="grid grid-cols-4 sm:grid-cols-8 gap-1 text-center text-xs">
-        <div id="step-node-1" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">1. Lấy hàng</div>
-          <div class="text-[8px] text-slate-500 truncate">Bàn chờ</div>
+      <div class="grid grid-cols-4 sm:grid-cols-8 gap-0.5 sm:gap-1 text-center text-xs">
+        <div id="step-node-1" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">1. Lấy hàng</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Bàn chờ</div>
         </div>
-        <div id="step-node-2" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">2. Đi qua bàn</div>
-          <div class="text-[8px] text-slate-500 truncate">Đặt lên bàn</div>
+        <div id="step-node-2" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">2. Đi qua bàn</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Đặt lên bàn</div>
         </div>
-        <div id="step-node-3" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">3. Quét mã</div>
-          <div class="text-[8px] text-slate-500 truncate">Cam 2 scan</div>
+        <div id="step-node-3" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">3. Quét mã</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Cam 2 scan</div>
         </div>
-        <div id="step-node-4" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">4. Vào hộp</div>
-          <div class="text-[8px] text-slate-500 truncate">Gập 4 nắp</div>
+        <div id="step-node-4" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">4. Vào hộp</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Gập 4 nắp</div>
         </div>
-        <div id="step-node-5" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">5. Niêm phong</div>
-          <div class="text-[8px] text-slate-500 truncate">Dán băng keo</div>
+        <div id="step-node-5" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">5. Niêm phong</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Dán băng keo</div>
         </div>
-        <div id="step-node-6" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">6. Bọc xốp</div>
-          <div class="text-[8px] text-slate-500 truncate">Bóng khí</div>
+        <div id="step-node-6" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">6. Bọc xốp</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Bóng khí</div>
         </div>
-        <div id="step-node-7" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">7. Dán tem</div>
-          <div class="text-[8px] text-slate-500 truncate">Tem SPX</div>
+        <div id="step-node-7" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">7. Dán tem</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Tem SPX</div>
         </div>
-        <div id="step-node-8" class="py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
-          <div class="font-bold text-[9px] truncate">8. Bàn giao</div>
-          <div class="text-[8px] text-slate-500 truncate">Chờ lấy</div>
+        <div id="step-node-8" class="py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all">
+          <div class="font-bold text-[8px] sm:text-[9px] truncate">8. Bàn giao</div>
+          <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">Chờ lấy</div>
         </div>
       </div>
     </div>
@@ -260,28 +281,28 @@
       <span id="barcode-display" class="hidden text-[9px] sm:text-[10px] font-mono-code px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap ml-2">SPX: HN-20-10</span>
     </div>
 
-    <!-- Hàng 4: Tất cả nút điều khiển trên 1 hàng ngang duy nhất -->
-    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 sm:gap-1.5 pt-0.5">
-      <div class="flex items-center gap-1 sm:gap-1.5">
-        <button id="btn-action" onclick="handleActionButton()" class="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span id="btn-action-label">1. Lấy sản phẩm</span>
+    <!-- Hàng 4: Tất cả nút điều khiển trên 1 hàng ngang duy nhất không bị wrap -->
+    <div class="flex items-center justify-between gap-1 pt-0.5">
+      <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        <button id="btn-action" onclick="handleActionButton()" class="px-2 py-1.5 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+          <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="btn-action-label" class="truncate max-w-[100px] xs:max-w-[130px] sm:max-w-none">1. Lấy sản phẩm</span>
         </button>
 
-        <button onclick="autoRunSimulation()" id="btn-auto" class="px-2 py-1.5 sm:px-2.5 sm:py-1.5 text-[11px] sm:text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95 whitespace-nowrap">
+        <button onclick="autoRunSimulation()" id="btn-auto" class="px-1.5 py-1.5 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95 whitespace-nowrap">
           Auto
         </button>
       </div>
 
-      <div class="flex items-center gap-1">
-        <button onclick="toggleWorkerVisibility()" id="btn-worker-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt mô hình người thao tác">
-          👤 <strong class="text-emerald-400" id="worker-status">BẬT</strong>
+      <div class="flex items-center gap-1 shrink-0">
+        <button onclick="toggleWorkerVisibility()" id="btn-worker-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[9px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt mô hình người thao tác">
+          👤 <span id="worker-status" class="text-emerald-400 font-bold">BẬT</span>
         </button>
-        <button onclick="toggleFOVCones()" id="btn-fov-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt chóp tia camera">
-          📐 <strong class="text-blue-400" id="fov-status">BẬT</strong>
+        <button onclick="toggleFOVCones()" id="btn-fov-toggle" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[9px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition whitespace-nowrap" title="Bật/Tắt chóp tia camera">
+          📐 <span id="fov-status" class="text-blue-400 font-bold">BẬT</span>
         </button>
-        <button onclick="handleResetProcess()" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-red-500/20 hover:text-red-300 text-slate-400 border border-slate-700/70 transition whitespace-nowrap" title="Làm mới trạng thái">
-          <span id="btn-reset-label">↺ Đơn mới</span>
+        <button onclick="handleResetProcess()" class="px-1.5 py-1 sm:px-2 sm:py-1.5 text-[9px] sm:text-[11px] rounded-xl bg-slate-800/80 hover:bg-red-500/20 hover:text-red-300 text-slate-400 border border-slate-700/70 transition whitespace-nowrap" title="Làm mới trạng thái">
+          <span id="btn-reset-label">↺ Reset</span>
         </button>
       </div>
     </div>
@@ -300,6 +321,10 @@
     const ZONE_Z = 0.12;                  // Nhô ra phía trước một chút
     const PACK_X = -0.05;                // Vị trí đóng thùng chính giữa bàn
     const PACK_Z = 0.05;
+    // Vị trí nghỉ của dao rọc giấy (nằm phía sau bên phải hộp, tách biệt hoàn toàn khỏi Vùng quét QR Cam 2)
+    const KNIFE_REST_X = 0.18;
+    const KNIFE_REST_Y = TABLE_HEIGHT + 0.007;
+    const KNIFE_REST_Z = -0.16;
 
     let scene, camera, renderer, controls;
     let pipCam1, pipCam2;
@@ -563,6 +588,7 @@
         camera.position.set(2.4, 2.2, 2.6);
         controls.target.set(-0.35, 0.85, 0);
         controls.update();
+        onWindowResize();
       }
 
       // Cập nhật đồng hồ CCTV
@@ -1391,9 +1417,13 @@
       // 4. DỤNG CỤ CẮT BĂNG DÍNH CẦM TAY & DAO RỌC GIẤY
       tapeDispenserMesh = createTapeDispenserMesh();
       tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
+      tapeDispenserMesh.visible = (currentMode === 'pack');
       simGroup.add(tapeDispenserMesh);
 
       utilityKnifeMesh = createUtilityKnifeMesh();
+      utilityKnifeMesh.position.set(KNIFE_REST_X, KNIFE_REST_Y, KNIFE_REST_Z);
+      utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
+      utilityKnifeMesh.visible = (currentMode === 'return');
       simGroup.add(utilityKnifeMesh);
 
       // 5. THÙNG CARTON ĐÓNG HÀNG (BOX)
@@ -2592,8 +2622,8 @@
         const node = document.getElementById('step-node-' + s.num);
         if (node) {
           node.innerHTML = `
-            <div class="font-bold text-[9px] truncate">${s.title}</div>
-            <div class="text-[8px] text-slate-500 truncate">${s.sub}</div>
+            <div class="font-bold text-[8px] sm:text-[9px] truncate">${s.title}</div>
+            <div class="text-[7px] sm:text-[8px] text-slate-500 truncate">${s.sub}</div>
           `;
         }
       });
@@ -2620,6 +2650,8 @@
           qrLabelMesh.material.map = packQRTexture;
           qrLabelMesh.material.needsUpdate = true;
         }
+        if (tapeDispenserMesh) tapeDispenserMesh.visible = true;
+        if (utilityKnifeMesh) utilityKnifeMesh.visible = false;
         updateTableSigns('pack');
         renderStepperNodes('pack');
         resetPackingProcess();
@@ -2633,6 +2665,8 @@
           qrLabelMesh.material.map = returnQRTexture;
           qrLabelMesh.material.needsUpdate = true;
         }
+        if (tapeDispenserMesh) tapeDispenserMesh.visible = false;
+        if (utilityKnifeMesh) utilityKnifeMesh.visible = true;
         updateTableSigns('return');
         renderStepperNodes('return');
         resetReturnProcess();
@@ -2991,7 +3025,7 @@
               qrLabelMesh.position.set(-0.50, TABLE_HEIGHT + 0.003, -0.22);
 
               if (utilityKnifeMesh) {
-                utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+                utilityKnifeMesh.position.set(KNIFE_REST_X, KNIFE_REST_Y, KNIFE_REST_Z);
                 utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
               }
               targetRHand.set(PACK_X + 0.15, TABLE_HEIGHT + 0.14, PACK_Z);
@@ -3029,7 +3063,7 @@
       setTimeout(() => {
         tapeStripMesh.visible = false;
         if (utilityKnifeMesh) {
-          utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+          utilityKnifeMesh.position.set(KNIFE_REST_X, KNIFE_REST_Y, KNIFE_REST_Z);
           utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
         }
 
@@ -3229,10 +3263,14 @@
         qrLabelMesh.rotation.set(-Math.PI / 2, 0, 0);
       }
 
-      // Dao rọc giấy nằm ngay ngắn trên bàn đóng gói
+      // Dao rọc giấy nằm ngay ngắn trên bàn đóng gói, ẩn dụng cụ dán băng keo
       if (utilityKnifeMesh) {
-        utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+        utilityKnifeMesh.visible = true;
+        utilityKnifeMesh.position.set(KNIFE_REST_X, KNIFE_REST_Y, KNIFE_REST_Z);
         utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
+      }
+      if (tapeDispenserMesh) {
+        tapeDispenserMesh.visible = false;
       }
 
       camLaserLine.visible = false;
@@ -3303,12 +3341,15 @@
 
       camLaserLine.visible = false;
 
+      // Hiện dụng cụ dán băng keo, ẩn dao rọc giấy
       if (tapeDispenserMesh) {
+        tapeDispenserMesh.visible = true;
         tapeDispenserMesh.position.set(PACK_X + 0.32, TABLE_HEIGHT + 0.025, PACK_Z - 0.20);
       }
 
       if (utilityKnifeMesh) {
-        utilityKnifeMesh.position.set(PACK_X + 0.34, TABLE_HEIGHT + 0.007, PACK_Z - 0.08);
+        utilityKnifeMesh.visible = false;
+        utilityKnifeMesh.position.set(KNIFE_REST_X, KNIFE_REST_Y, KNIFE_REST_Z);
         utilityKnifeMesh.rotation.set(0, -Math.PI * 0.15, 0);
       }
 
@@ -3344,14 +3385,14 @@
         if (!el) continue;
         if (i === step) {
           if (isReturn) {
-            el.className = "py-1 px-0.5 rounded-lg bg-gradient-to-r from-amber-600/30 to-rose-600/30 border border-rose-500 text-white shadow-md shadow-rose-500/20 transition-all scale-102";
+            el.className = "py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-gradient-to-r from-amber-600/30 to-rose-600/30 border border-rose-500 text-white shadow-md shadow-rose-500/20 transition-all scale-[1.02]";
           } else {
-            el.className = "py-1 px-0.5 rounded-lg bg-blue-600/30 border border-blue-500 text-white shadow-md shadow-blue-500/20 transition-all scale-102";
+            el.className = "py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-blue-600/30 border border-blue-500 text-white shadow-md shadow-blue-500/20 transition-all scale-[1.02]";
           }
         } else if (i < step) {
-          el.className = "py-1 px-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition-all";
+          el.className = "py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 transition-all";
         } else {
-          el.className = "py-1 px-0.5 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all";
+          el.className = "py-0.5 px-0.5 sm:py-1 sm:px-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-slate-400 transition-all";
         }
       }
     }
@@ -3493,8 +3534,8 @@
 
     // ĐIỀU KHIỂN THU PHÓNG KHUNG PiP QR Ở GÓC PHẢI
     let pipExpanded = false;
-    const PIP_COMPACT_CLASSES = ['w-[105px]', 'xs:w-[125px]', 'sm:w-[145px]', 'md:w-[165px]'];
-    const PIP_EXPANDED_CLASSES = ['w-[180px]', 'xs:w-[210px]', 'sm:w-[245px]', 'md:w-[275px]'];
+    const PIP_COMPACT_CLASSES = ['w-[95px]', 'xs:w-[115px]', 'sm:w-[130px]', 'md:w-[155px]', 'lg:w-[170px]'];
+    const PIP_EXPANDED_CLASSES = ['w-[150px]', 'xs:w-[180px]', 'sm:w-[210px]', 'md:w-[245px]', 'lg:w-[270px]'];
 
     function togglePipExpand() {
       const pip = document.getElementById('pip-cam2-container');
